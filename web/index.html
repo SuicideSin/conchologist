@@ -1,0 +1,48 @@
+<html>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"/>
+	<meta name="HandheldFriendly" content="true"/>
+	<head>
+		<link rel="stylesheet" href="css/doorways.css">
+		<link rel="stylesheet" href="css/terminal.css">
+		<style>
+			html,body,head
+			{
+				width:100%;
+				height:100%;
+				margin:0px;
+				padding:0px;
+			}
+		</style>
+		<div id="constrain"></div>
+		<script src="js/doorways.js"></script>
+		<script src="js/terminal.js"></script>
+		<script src="js/utils.js"></script>
+		<script>
+			var constrain=document.getElementById("constrain");
+			var manager=new doorway_manager_t(constrain);
+			var doorway=manager.add
+			({
+				title:"Test",
+				active:true,
+				size:
+				{
+					w:800,
+					h:800
+				},
+				pos:
+				{
+					x:0,
+					y:32
+				},
+				min_size:
+				{
+					w:200,
+					h:200
+				}
+			});
+			var terminal=new terminal_t(doorway);
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
