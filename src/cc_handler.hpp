@@ -15,6 +15,7 @@ struct cc_client_t
 
 class cc_handler_t;
 
+typedef std::vector<cc_client_t> cc_client_list_t;
 typedef std::map<mg_connection*,cc_client_t> cc_client_map_t;
 typedef void(*cc_handler_cb_t)(cc_handler_t&,const cc_client_t&);
 
@@ -30,7 +31,8 @@ class cc_handler_t
 		void remove(mg_connection* conn);
 		void recv(mg_connection* conn,const std::string& buffer);
 		void send(const std::string& address,const std::string& buffer);
-		std::vector<cc_client_t> list() const;
+		cc_client_list_t list() const;
+		const cc_client_map_t& map() const;
 	private:
 		cc_handler_t(const cc_handler_t& copy);
 		cc_handler_t& operator=(const cc_handler_t& copy);

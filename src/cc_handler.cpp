@@ -100,10 +100,15 @@ void cc_handler_t::send(const std::string& address,const std::string& buffer)
 			mg_send(ii->first,buffer.c_str(),buffer.size());
 }
 
-std::vector<cc_client_t> cc_handler_t::list() const
+cc_client_list_t cc_handler_t::list() const
 {
-	std::vector<cc_client_t> clients;
+	cc_client_list_t clients;
 	for(cc_client_map_t::const_iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
 		clients.push_back(ii->second);
 	return clients;
+}
+
+const cc_client_map_t& cc_handler_t::map() const
+{
+	return clients_m;
 }

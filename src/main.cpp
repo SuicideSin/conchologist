@@ -1,5 +1,7 @@
 #include "cc_handler.hpp"
 #include <iostream>
+#include <jsoncpp/json.h>
+#include <json_util.hpp>
 #include <stdexcept>
 #include <string>
 #include "web_handler.hpp"
@@ -30,19 +32,59 @@ void recv_cb(cc_handler_t& handler,const cc_client_t& client)
 bool web_cb(web_handler_t& handler,const web_client_t& client)
 {
 	std::cout<<"Connection: "<<client.address<<" "<<
-			client.method<<" "<<client.request;
-		if(client.query.size()>0)
-			std::cout<<"?"<<client.query;
-		std::cout<<std::endl;
+		client.method<<" "<<client.request;
+	if(client.query.size()>0)
+		std::cout<<"?"<<client.query;
+	std::cout<<std::endl;
 	if(client.method=="POST")
 	{
-		handler.send(client,"200 OK","You sent: "+client.post_data);
+		Json::Value obj;
+		std::string response="400 Bad Request";
+		try
+		{
+			Json::Value request(JSON_parse(client.post_data));
+
+			if(request["method"]=="updates")
+			{
+				Json::Value& counts=request["params"];
+				Json::Value updates;
+				cc_client_map_t clients=cc_handler.map();
+				for(cc_client_map_t::const_iterator ii=clients.begin();ii!=clients.end();++ii)
+				{
+					std::string address=ii->second.address;
+					const std::vector<std::string>& history=ii->second.history;
+
+					if(!counts.isMember(address))
+						counts[address]=0;
+
+					size_t line_size=counts[address].asUInt();
+					Json::Value new_lines(Json::arrayValue);
+					for(size_t jj=line_size;jj<history.size();++jj)
+						new_lines.append(history[jj]);
+					updates[address]=new_lines;
+				}
+				obj["result"]=updates;
+			}
+			else
+			{
+				obj["error"]="Unsupported method.";
+			}
+		}
+		catch(std::exception& error)
+		{
+			obj["error"]=error.what();
+		}
+		catch(...)
+		{
+			obj["error"]="Unknown error.";
+		}
+		handler.send(client,response,JSON_stringify(obj));
 		return true;
 	}
 	return false;
 }
 
-int main(void)
+int main()
 {
 	try
 	{
