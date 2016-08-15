@@ -61,6 +61,14 @@ terminal_manager_t.prototype.update=function()
 						{
 							var current_scroll=terminal.history.scrollHeight-terminal.history.scrollTop;
 							var scroll_end=(current_scroll==terminal.history.offsetHeight);
+							var line_str=updates.result[key].new_lines[line];
+							var spaces="";
+							while(line_str.substr(0,2)=='  ')
+							{
+								spaces+="&nbsp;";
+								line_str=line_str.substr(1,line_str.length);
+							}
+							terminal.history.innerHTML+=spaces;
 							var text=document.createTextNode(updates.result[key].new_lines[line]);
 							terminal.history.appendChild(text);
 							var line_break=document.createElement("br");
