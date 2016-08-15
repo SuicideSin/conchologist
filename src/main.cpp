@@ -2,21 +2,28 @@
 #include <iostream>
 #include <jsoncpp/json.h>
 #include <json_util.hpp>
+#include <mongoose/mongoose.h>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include "web_handler.hpp"
 
 void add_cb(cc_handler_t& handler,const cc_client_t& client);
 void remove_cb(cc_handler_t& handler,const cc_client_t& client);
 void recv_cb(cc_handler_t& handler,const cc_client_t& client);
-bool web_cb(web_handler_t& handler,const web_client_t& client);
+bool web_cb(web_handler_t& handler,web_client_t& client);
+void web_close_cb(web_handler_t& handler,mg_connection* conn);
+bool service_comet(web_client_t& client);
+void service_comets();
 
 cc_handler_t cc_handler(add_cb,remove_cb,recv_cb);
-web_handler_t web_handler("web",web_cb);
+web_handler_t web_handler("web",web_cb,web_close_cb);
+std::vector<web_client_t> comets;
 
 void add_cb(cc_handler_t& handler,const cc_client_t& client)
 {
 	std::cout<<"Added "<<client.address<<std::endl;
+	service_comets();
 }
 
 void remove_cb(cc_handler_t& handler,const cc_client_t& client)
@@ -27,15 +34,17 @@ void remove_cb(cc_handler_t& handler,const cc_client_t& client)
 void recv_cb(cc_handler_t& handler,const cc_client_t& client)
 {
 	std::cout<<"Received "<<client.address<<" "<<client.history[client.history.size()-1]<<std::endl;
+	service_comets();
 }
 
-bool web_cb(web_handler_t& handler,const web_client_t& client)
+bool web_cb(web_handler_t& handler,web_client_t& client)
 {
 	std::cout<<"Connection: "<<client.address<<" "<<
 		client.method<<" "<<client.request;
 	if(client.query.size()>0)
 		std::cout<<"?"<<client.query;
 	std::cout<<std::endl;
+	bool send=true;
 	if(client.method=="POST")
 	{
 		Json::Value obj;
@@ -45,31 +54,18 @@ bool web_cb(web_handler_t& handler,const web_client_t& client)
 			Json::Value request(JSON_parse(client.post_data));
 			if(request["method"]=="updates")
 			{
-				Json::Value& counts=request["params"];
-				Json::Value updates(Json::objectValue);
-				cc_client_map_t clients=cc_handler.map();
-				for(cc_client_map_t::const_iterator ii=clients.begin();ii!=clients.end();++ii)
+				if(!service_comet(client))
 				{
-					std::string address=ii->second.address;
-					const std::vector<std::string>& history=ii->second.history;
-
-					if(!counts.isMember(address))
-						counts[address]=0;
-
-					size_t line_size=counts[address].asUInt();
-					Json::Value new_lines(Json::arrayValue);
-					for(size_t jj=line_size;jj<history.size();++jj)
-						new_lines.append(history[jj]);
-					updates[address]["last_count"]=(Json::LargestUInt(line_size));
-					updates[address]["new_lines"]=new_lines;
+					send=false;
+					comets.push_back(client);
 				}
-				obj["result"]=updates;
 			}
 			else if(request["method"]=="write")
 			{
 				std::string address=request["params"]["address"].asString();
 				std::string line=request["params"]["line"].asString();
 				cc_handler.send(address,line);
+				service_comets();
 			}
 			else
 			{
@@ -84,20 +80,91 @@ bool web_cb(web_handler_t& handler,const web_client_t& client)
 		{
 			obj["error"]="Unknown error.";
 		}
-		handler.send(client,response,JSON_stringify(obj));
+		if(send)
+			web_handler.send(client,response,JSON_stringify(obj));
 		return true;
 	}
 	return false;
+}
+
+void web_close_cb(web_handler_t& handler,mg_connection* conn)
+{
+	std::vector<web_client_t> new_comets;
+	for(size_t ii=0;ii<comets.size();++ii)
+	{
+		if(comets[ii].conn==conn)
+		{
+			comets[ii].conn->flags&=~MG_F_USER_1;
+			handler.send(comets[ii],"408 Request Timeout","");
+			continue;
+		}
+		new_comets.push_back(comets[ii]);
+	}
+	comets=new_comets;
+}
+
+bool service_comet(web_client_t& client)
+{
+	bool changed=false;
+	Json::Value obj;
+	std::string response="200 OK";
+	Json::Value request(JSON_parse(client.post_data));
+	Json::Value& counts=request["params"];
+	Json::Value updates(Json::objectValue);
+	cc_client_map_t cc_clients=cc_handler.map();
+
+	for(cc_client_map_t::const_iterator ii=cc_clients.begin();ii!=cc_clients.end();++ii)
+	{
+		std::string address=ii->second.address;
+		const std::vector<std::string>& history=ii->second.history;
+
+		if(!counts.isMember(address))
+		{
+			counts[address]=0;
+			changed=true;
+		}
+
+		size_t line_size=counts[address].asUInt();
+		Json::Value new_lines(Json::arrayValue);
+		for(size_t jj=line_size;jj<history.size();++jj)
+		{
+			new_lines.append(history[jj]);
+			changed=true;
+		}
+		updates[address]["last_count"]=(Json::LargestUInt(line_size));
+		updates[address]["new_lines"]=new_lines;
+	}
+	obj["result"]=updates;
+
+	if(changed)
+	{
+		client.conn->flags&=~MG_F_USER_1;
+		web_handler.send(client,response,JSON_stringify(obj));
+	}
+
+	return changed;
+}
+
+void service_comets()
+{
+	std::vector<web_client_t> new_comets;
+	for(size_t ii=0;ii<comets.size();++ii)
+		if(!service_comet(comets[ii]))
+			new_comets.push_back(comets[ii]);
+	comets=new_comets;
 }
 
 int main()
 {
 	try
 	{
-		cc_handler.connect("127.0.0.1:8080");
-		std::cout<<"Started cc server on 127.0.0.1:8080"<<std::endl;
-		web_handler.connect("127.0.0.1:8081");
-		std::cout<<"Started web server on 127.0.0.1:8081"<<std::endl;
+		std::string cc_address("0.0.0.0:8080");
+		std::string web_address("0.0.0.0:8081");
+
+		cc_handler.connect(cc_address);
+		std::cout<<"Started cc server on "<<cc_address<<std::endl;
+		web_handler.connect(web_address);
+		std::cout<<"Started web server on "<<web_address<<std::endl;
 		while(true)
 		{
 			cc_handler.update();

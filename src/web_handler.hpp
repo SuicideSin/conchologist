@@ -18,18 +18,21 @@ struct web_client_t
 };
 class web_handler_t;
 
-typedef bool(*web_handler_cb_t)(web_handler_t&,const web_client_t&);
+typedef bool(*web_handler_cb_t)(web_handler_t&,web_client_t&);
+
+typedef void(*web_handler_close_cb_t)(web_handler_t&,mg_connection*);
 
 class web_handler_t
 {
 	public:
 		web_handler_t(const std::string& web_root,
-			web_handler_cb_t service_cb=NULL);
+			web_handler_cb_t service_cb=NULL,web_handler_close_cb_t close_cb=NULL);
 		~web_handler_t();
 		void connect(const std::string& address);
 		void update();
 		std::string web_root() const;
-		bool service(const web_client_t& client);
+		bool service(web_client_t& client);
+		void close(mg_connection* conn);
 		void send(const web_client_t& client,const std::string& status,
 			const std::string& content);
 	private:
@@ -39,6 +42,7 @@ class web_handler_t
 		mg_mgr mgr_m;
 		std::string web_root_m;
 		web_handler_cb_t service_cb_m;
+		web_handler_close_cb_t close_cb_m;
 };
 
 #endif

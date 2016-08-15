@@ -4,10 +4,7 @@ function terminal_manager_t(doorway_manager)
 		return null;
 	this.doorway_manager=doorway_manager;
 	var _this=this;
-	this.interval=setInterval(function()
-	{
-		_this.update();
-	},200);
+	this.update();
 	this.terminals={};
 	this.updates={};
 }
@@ -37,33 +34,42 @@ terminal_manager_t.prototype.update=function()
 	var xhr=new XMLHttpRequest();
 	xhr.onreadystatechange=function()
 	{
-		if(xhr.readyState==4&&xhr.status==200)
+		if(xhr.readyState==4)
 		{
-			try
+			if(xhr.status==200)
 			{
-				var updates=JSON.parse(xhr.responseText);
-				for(var key in updates.result)
+				try
 				{
-					if(!(key in _this.terminals))
+					var updates=JSON.parse(xhr.responseText);
+					for(var key in updates.result)
 					{
-						_this.updates[key]=0;
-						var doorway=_this.doorway_manager.add({title:key});
-						var old_settings=localStorage.getItem(key);
-						if(old_settings)
-							doorway.load(JSON.parse(old_settings));
-						_this.terminals[key]=new terminal_t(_this,doorway);
+						if(!(key in _this.terminals))
+						{
+							_this.updates[key]=0;
+							var doorway=_this.doorway_manager.add({title:key});
+							var old_settings=localStorage.getItem(key);
+							if(old_settings)
+								doorway.load(JSON.parse(old_settings));
+							_this.terminals[key]=new terminal_t(_this,doorway);
+						}
+						if(updates.result[key].last_count>=_this.updates[key])
+						{
+							_this.updates[key]+=updates.result[key].new_lines.length;
+							for(var line in updates.result[key].new_lines)
+								_this.terminals[key].add_line(updates.result[key].new_lines[line]);
+						}
 					}
-					if(updates.result[key].last_count>=_this.updates[key])
-					{
-						_this.updates[key]+=updates.result[key].new_lines.length;
-						for(var line in updates.result[key].new_lines)
-							_this.terminals[key].add_line(updates.result[key].new_lines[line]);
-					}
+					_this.update();
+				}
+				catch(error)
+				{
+					_this.update();
+					console.log(error);
 				}
 			}
-			catch(error)
+			else
 			{
-				console.log(error);
+				_this.update();
 			}
 		}
 	};
@@ -103,17 +109,14 @@ function terminal_t(manager,doorway)
 	this.el.appendChild(this.input);
 	this.input.className="doorways terminal input";
 	this.input.placeholder="Command";
-	this.input.addEventListener("keyup",function(evt)
+	this.input.addEventListener("keydown",function(evt)
 	{
 		if(evt.keyCode==13)
 		{
 			_this.manager.send(doorway.title,this.value);
 			this.value="";
 		}
-	});
-	this.input.addEventListener("keydown",function(evt)
-	{
-		if(evt.keyCode==38&&_this.history_ptr-1>=0&&_this.history_lookup.length>0)
+		else if(evt.keyCode==38&&_this.history_ptr-1>=0&&_this.history_lookup.length>0)
 		{
 			--_this.history_ptr;
 			this.value=_this.history_lookup[_this.history_ptr];

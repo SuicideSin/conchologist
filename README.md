@@ -4,5 +4,5 @@ Every wanted to share your shells with your script kiddie friends?
 Then you should try cc_handler!
 
 Note:
-History isn't implemented yet (easy to do...just needs to be implemented).
 Name is a work in progress...
+Currently doesn't remove old sessions (not sure if I want to implement this...they aren't kept on the server, but clients keep them locally...).

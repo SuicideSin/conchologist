@@ -5,7 +5,12 @@
 
 static void ev_handler(mg_connection* conn,int event,void* p)
 {
-	if(event==MG_EV_HTTP_REQUEST)
+	if(event==MG_EV_CLOSE)
+	{
+		web_handler_t& handler(*(web_handler_t*)(conn->mgr->user_data));
+		handler.close(conn);
+	}
+	else if(event==MG_EV_HTTP_REQUEST)
 	{
 		http_message* msg=(http_message*)p;
 		if(msg==NULL)
@@ -46,8 +51,11 @@ static void ev_handler(mg_connection* conn,int event,void* p)
 }
 
 web_handler_t::web_handler_t(const std::string& web_root,
-	web_handler_cb_t service_cb):
-	connected_m(false),web_root_m(web_root),service_cb_m(service_cb)
+	web_handler_cb_t service_cb,web_handler_close_cb_t close_cb):
+	connected_m(false),
+	web_root_m(web_root),
+	service_cb_m(service_cb),
+	close_cb_m(close_cb)
 {}
 
 web_handler_t::~web_handler_t()
@@ -83,11 +91,17 @@ std::string web_handler_t::web_root() const
 	return web_root_m;
 }
 
-bool web_handler_t::service(const web_client_t& client)
+bool web_handler_t::service(web_client_t& client)
 {
 	if(service_cb_m)
 		return service_cb_m(*this,client);
 	return false;
+}
+
+void web_handler_t::close(mg_connection* conn)
+{
+	if(close_cb_m)
+		close_cb_m(*this,conn);
 }
 
 void web_handler_t::send(const web_client_t& client,const std::string& status,
