@@ -93,11 +93,15 @@ void cc_handler_t::recv(mg_connection* conn,const std::string& buffer)
 		recv_cb_m(*this,clients_m[conn]);
 }
 
-void cc_handler_t::send(const std::string& address,const std::string& buffer)
+void cc_handler_t::send(const std::string& address,std::string buffer)
 {
 	for(cc_client_map_t::iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
 		if(ii->second.address==address)
+		{
+			ii->second.history.push_back("> "+buffer);
+			buffer+="\n";
 			mg_send(ii->first,buffer.c_str(),buffer.size());
+		}
 }
 
 cc_client_list_t cc_handler_t::list() const

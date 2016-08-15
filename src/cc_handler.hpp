@@ -30,7 +30,7 @@ class cc_handler_t
 		void add(mg_connection* conn);
 		void remove(mg_connection* conn);
 		void recv(mg_connection* conn,const std::string& buffer);
-		void send(const std::string& address,const std::string& buffer);
+		void send(const std::string& address,std::string buffer);
 		cc_client_list_t list() const;
 		const cc_client_map_t& map() const;
 	private:

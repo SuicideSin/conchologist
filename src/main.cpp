@@ -39,15 +39,14 @@ bool web_cb(web_handler_t& handler,const web_client_t& client)
 	if(client.method=="POST")
 	{
 		Json::Value obj;
-		std::string response="400 Bad Request";
+		std::string response="200 OK";
 		try
 		{
 			Json::Value request(JSON_parse(client.post_data));
-
 			if(request["method"]=="updates")
 			{
 				Json::Value& counts=request["params"];
-				Json::Value updates;
+				Json::Value updates(Json::objectValue);
 				cc_client_map_t clients=cc_handler.map();
 				for(cc_client_map_t::const_iterator ii=clients.begin();ii!=clients.end();++ii)
 				{
@@ -65,6 +64,12 @@ bool web_cb(web_handler_t& handler,const web_client_t& client)
 				}
 				obj["result"]=updates;
 			}
+			else if(request["method"]=="write")
+			{
+				std::string address=request["params"]["address"].asString();
+				std::string line=request["params"]["line"].asString();
+				cc_handler.send(address,line);
+			}
 			else
 			{
 				obj["error"]="Unsupported method.";
@@ -78,6 +83,7 @@ bool web_cb(web_handler_t& handler,const web_client_t& client)
 		{
 			obj["error"]="Unknown error.";
 		}
+		std::cout<<"SENDING: "<<JSON_stringify(obj)<<std::endl;
 		handler.send(client,response,JSON_stringify(obj));
 		return true;
 	}

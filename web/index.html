@@ -20,27 +20,7 @@
 		<script>
 			var constrain=document.getElementById("constrain");
 			var manager=new doorway_manager_t(constrain);
-			var doorway=manager.add
-			({
-				title:"Test",
-				active:true,
-				size:
-				{
-					w:800,
-					h:800
-				},
-				pos:
-				{
-					x:0,
-					y:32
-				},
-				min_size:
-				{
-					w:200,
-					h:200
-				}
-			});
-			var terminal=new terminal_t(doorway);
+			var terminal_manager=new terminal_manager_t(manager);
 		</script>
 	</head>
 	<body>
