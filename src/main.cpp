@@ -60,7 +60,8 @@ bool web_cb(web_handler_t& handler,const web_client_t& client)
 					Json::Value new_lines(Json::arrayValue);
 					for(size_t jj=line_size;jj<history.size();++jj)
 						new_lines.append(history[jj]);
-					updates[address]=new_lines;
+					updates[address]["last_count"]=(Json::LargestUInt(line_size));
+					updates[address]["new_lines"]=new_lines;
 				}
 				obj["result"]=updates;
 			}

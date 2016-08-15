@@ -53,18 +53,21 @@ terminal_manager_t.prototype.update=function()
 							doorway.load(JSON.parse(old_settings));
 						_this.terminals[key]=new terminal_t(_this,doorway);
 					}
-					_this.updates[key]+=updates.result[key].length;
-					var terminal=_this.terminals[key];
-					for(var line in updates.result[key])
+					if(updates.result[key].last_count>=_this.updates[key])
 					{
-						var current_scroll=terminal.history.scrollHeight-terminal.history.scrollTop;
-						var scroll_end=(current_scroll==terminal.history.offsetHeight);
-						var text=document.createTextNode(updates.result[key][line]);
-						terminal.history.appendChild(text);
-						var line_break=document.createElement("br");
-						terminal.history.appendChild(line_break);
-						if(scroll_end)
-							terminal.history.scrollTop=terminal.history.scrollHeight;
+						_this.updates[key]+=updates.result[key].new_lines.length;
+						var terminal=_this.terminals[key];
+						for(var line in updates.result[key].new_lines)
+						{
+							var current_scroll=terminal.history.scrollHeight-terminal.history.scrollTop;
+							var scroll_end=(current_scroll==terminal.history.offsetHeight);
+							var text=document.createTextNode(updates.result[key].new_lines[line]);
+							terminal.history.appendChild(text);
+							var line_break=document.createElement("br");
+							terminal.history.appendChild(line_break);
+							if(scroll_end)
+								terminal.history.scrollTop=terminal.history.scrollHeight;
+						}
 					}
 				}
 			}
