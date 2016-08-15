@@ -1,6 +1,7 @@
 #include "web_handler.hpp"
 
 #include <stdexcept>
+#include <string.h>
 
 static void ev_handler(mg_connection* conn,int event,void* p)
 {
@@ -25,11 +26,11 @@ static void ev_handler(mg_connection* conn,int event,void* p)
 		{
 			if(client.method=="GET")
 			{
-				mg_serve_http_opts opts=
-				{
-					.document_root=handler.web_root().c_str(),
-					.enable_directory_listing="no"
-				};
+				mg_serve_http_opts opts;
+				memset(&opts,0,sizeof(opts));
+				opts.document_root=handler.web_root().c_str();
+				opts.enable_directory_listing="no";
+
 				mg_serve_http(conn,msg,opts);
 			}
 			else if(client.method=="POST")
