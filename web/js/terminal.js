@@ -46,7 +46,15 @@ terminal_manager_t.prototype.update=function()
 						if(!(key in _this.terminals))
 						{
 							_this.updates[key]=0;
-							var doorway=_this.doorway_manager.add({title:key});
+							var doorway=_this.doorway_manager.add
+							({
+								title:key,
+								min_size:
+								{
+									w:200,
+									h:200
+								}
+							});
 							var old_settings=localStorage.getItem(key);
 							if(old_settings)
 								doorway.load(JSON.parse(old_settings));
