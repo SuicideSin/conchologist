@@ -84,7 +84,6 @@ bool web_cb(web_handler_t& handler,const web_client_t& client)
 		{
 			obj["error"]="Unknown error.";
 		}
-		std::cout<<"SENDING: "<<JSON_stringify(obj)<<std::endl;
 		handler.send(client,response,JSON_stringify(obj));
 		return true;
 	}
