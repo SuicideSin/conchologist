@@ -56,26 +56,8 @@ terminal_manager_t.prototype.update=function()
 					if(updates.result[key].last_count>=_this.updates[key])
 					{
 						_this.updates[key]+=updates.result[key].new_lines.length;
-						var terminal=_this.terminals[key];
 						for(var line in updates.result[key].new_lines)
-						{
-							var current_scroll=terminal.history.scrollHeight-terminal.history.scrollTop;
-							var scroll_end=(current_scroll==terminal.history.offsetHeight);
-							var line_str=updates.result[key].new_lines[line];
-							var spaces="";
-							while(line_str.substr(0,2)=='  ')
-							{
-								spaces+="&nbsp;";
-								line_str=line_str.substr(1,line_str.length);
-							}
-							terminal.history.innerHTML+=spaces;
-							var text=document.createTextNode(updates.result[key].new_lines[line]);
-							terminal.history.appendChild(text);
-							var line_break=document.createElement("br");
-							terminal.history.appendChild(line_break);
-							if(scroll_end)
-								terminal.history.scrollTop=terminal.history.scrollHeight;
-						}
+							_this.terminals[key].add_line(updates.result[key].new_lines[line]);
 					}
 				}
 			}
@@ -106,6 +88,8 @@ function terminal_t(manager,doorway)
 		this.manager=manager;
 	this.doorway=doorway;
 	var _this=this;
+	this.history_lookup=[];
+	this.history_ptr=-1;
 
 	this.el=document.createElement("div");
 	this.doorway.win.appendChild(this.el);
@@ -127,6 +111,27 @@ function terminal_t(manager,doorway)
 			this.value="";
 		}
 	});
+	this.input.addEventListener("keydown",function(evt)
+	{
+		if(evt.keyCode==38&&_this.history_ptr-1>=0&&_this.history_lookup.length>0)
+		{
+			--_this.history_ptr;
+			this.value=_this.history_lookup[_this.history_ptr];
+		}
+		else if(evt.keyCode==40&&_this.history_ptr+1<=_this.history_lookup.length&&
+				_this.history_lookup.length>0)
+		{
+			++_this.history_ptr;
+			if(_this.history_ptr==_this.history_lookup.length)
+			{
+				this.value="";
+			}
+			else
+			{
+				this.value=_this.history_lookup[_this.history_ptr];
+			}
+		}
+	});
 
 	this.interval=setInterval(function()
 	{
@@ -134,8 +139,29 @@ function terminal_t(manager,doorway)
 	},500);
 }
 
+terminal_t.prototype.add_line=function(line)
+{
+	var current_scroll=this.history.scrollHeight-this.history.scrollTop;
+	var scroll_end=(current_scroll==this.history.offsetHeight);
+	this.history.appendChild(document.createTextNode(line));
+	this.history.appendChild(document.createElement("br"));
+	if(scroll_end)
+		this.history.scrollTop=this.history.scrollHeight;
+	if(line.substr(0,2)=="> "&&(this.history_lookup.length==0||
+		this.history_lookup[this.history_lookup.length-1]!=line.substr(2,line.length)))
+		this.history_lookup.push(line.substr(2,line.length));
+	this.history_ptr=this.history_lookup.length;
+	if(this.history_ptr<0)
+		this.history_ptr=0;
+}
+
 terminal_t.prototype.destroy=function()
 {
+	if(this.interval)
+	{
+		clearInterval(this.interval);
+		this.interval=null;
+	}
 	if(this.doorway)
 	{
 		this.doorway.win.removeChild(this.el);
@@ -143,4 +169,5 @@ terminal_t.prototype.destroy=function()
 	}
 	if(this.manager)
 		this.manager=null;
+	this.history_lookup=this.history_ptr=null;
 }
