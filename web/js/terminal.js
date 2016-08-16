@@ -49,6 +49,7 @@ terminal_manager_t.prototype.update=function()
 							var doorway=_this.doorway_manager.add
 							({
 								title:key,
+								active:(_this.doorway_manager.doorways.length!=0),
 								min_size:
 								{
 									w:200,
