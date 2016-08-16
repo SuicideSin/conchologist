@@ -38,8 +38,8 @@ terminal_manager_t.prototype.update=function()
 		{
 			if(xhr.status==200)
 			{
-				try
-				{
+				//try
+				//{
 					var updates=JSON.parse(xhr.responseText);
 					for(var key in updates.result)
 					{
@@ -49,19 +49,25 @@ terminal_manager_t.prototype.update=function()
 							var doorway=_this.doorway_manager.add
 							({
 								title:key,
-								active:(_this.doorway_manager.doorways.length!=0),
+								minimized:true,
 								min_size:
 								{
 									w:200,
 									h:200
 								}
 							});
+							if(Object.keys(_this.doorway_manager.doorways).length==1)
+							{
+								doorway.set_active(true);
+								doorway.set_minimized(false);
+							}
+
 							var old_settings=localStorage.getItem(key);
 							if(old_settings)
 								doorway.load(JSON.parse(old_settings));
 							_this.terminals[key]=new terminal_t(_this,doorway);
 						}
-						if(updates.result[key].last_count>=_this.updates[key])
+						if(updates.result[key]&&updates.result[key].last_count>=_this.updates[key])
 						{
 							_this.updates[key]+=updates.result[key].new_lines.length;
 							for(var line in updates.result[key].new_lines)
@@ -69,14 +75,15 @@ terminal_manager_t.prototype.update=function()
 						}
 					}
 					_this.update();
-				}
-				catch(error)
-				{
-					setTimeout(function()
-					{
-						_this.update();
-					},1000);
-				}
+				//}
+				//catch(error)
+				//{
+				//	console.log(error);
+				//	setTimeout(function()
+				//	{
+				//		_this.update();
+				//	},1000);
+				//}
 			}
 			else
 			{
