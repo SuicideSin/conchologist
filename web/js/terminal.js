@@ -71,12 +71,18 @@ terminal_manager_t.prototype.update=function()
 				}
 				catch(error)
 				{
-					_this.update();
+					setTimeout(function()
+					{
+						_this.update();
+					},1000);
 				}
 			}
 			else
 			{
-				_this.update();
+				setTimeout(function()
+				{
+					_this.update();
+				},1000);
 			}
 		}
 	};
