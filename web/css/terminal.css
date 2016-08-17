@@ -23,6 +23,7 @@
 	width:calc(100% - var(--window-padding) * 2 - var(--inner-padding) * 2);
 	height:calc(100% - 24px - var(--window-padding) * 3 - var(--bar-height));
 	overflow:auto;
+	white-space:nowrap;
 	-moz-box-shadow:var(--shadow);
 	-webkit-box-shadow:var(--shadow);
 	box-shadow:var(--shadow);
