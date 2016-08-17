@@ -127,7 +127,11 @@ function terminal_t(manager,doorway)
 	this.input.placeholder="Command";
 	this.input.addEventListener("keydown",function(evt)
 	{
-		if(evt.keyCode==13)
+		if(evt.keyCode==9)
+		{
+			evt.preventDefault();
+		}
+		else if(evt.keyCode==13)
 		{
 			_this.manager.send(doorway.title,this.value+"\n");
 			this.value="";
