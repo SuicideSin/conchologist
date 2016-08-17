@@ -26,6 +26,9 @@
 	-moz-box-shadow:var(--shadow);
 	-webkit-box-shadow:var(--shadow);
 	box-shadow:var(--shadow);
+	-webkit-user-select:text;
+	-moz-user-select:text;
+	-ms-user-select:text;
 }
 
 .doorways.terminal.input

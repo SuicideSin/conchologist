@@ -337,10 +337,7 @@ doorway_t.prototype.load=function(data)
 	this.resize(data.size);
 	this.move(data.pos);
 	if(data_copy.z)
-	{
-		console.log(data_copy.title+" "+data_copy.z);
 		this.win.style.zIndex=parseInt(data_copy.z);
-	}
 }
 
 //Moves window to given position.

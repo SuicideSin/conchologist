@@ -169,11 +169,19 @@ function terminal_t(manager,doorway)
 terminal_t.prototype.add_line=function(line)
 {
 	var current_scroll=this.history.scrollHeight-this.history.scrollTop;
-	var scroll_end=(current_scroll==this.history.offsetHeight);
-	this.history.appendChild(document.createTextNode(line));
-	this.history.appendChild(document.createElement("br"));
+	var scroll_end=(Math.abs(current_scroll-this.history.offsetHeight)<20);
+	var _this=this;
+	if(line.substr(0,2)!="> ")
+	{
+		this.history.appendChild(document.createTextNode(line));
+		if(line.length>0&&line[line.length-1]=='\n')
+			this.history.appendChild(document.createElement("br"));
+	}
 	if(scroll_end)
-		this.history.scrollTop=this.history.scrollHeight;
+		setTimeout(function()
+		{
+			_this.history.scrollTop=_this.history.scrollHeight+1000;
+		},100);
 	if(line.substr(0,2)=="> "&&(this.history_lookup.length==0||
 		this.history_lookup[this.history_lookup.length-1]!=line.substr(2,line.length)))
 		this.history_lookup.push(line.substr(2,line.length));
