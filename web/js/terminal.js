@@ -129,7 +129,7 @@ function terminal_t(manager,doorway)
 	{
 		if(evt.keyCode==13)
 		{
-			_this.manager.send(doorway.title,this.value);
+			_this.manager.send(doorway.title,this.value+"\n");
 			this.value="";
 		}
 		else if(evt.keyCode==38)
@@ -171,7 +171,7 @@ terminal_t.prototype.add_line=function(line)
 	var current_scroll=this.history.scrollHeight-this.history.scrollTop;
 	var scroll_end=(Math.abs(current_scroll-this.history.offsetHeight)<20);
 	var _this=this;
-	if(line.substr(0,2)!="> ")
+	//if(line.substr(0,2)!="> ")
 	{
 		this.history.appendChild(document.createTextNode(line));
 		if(line.length>0&&line[line.length-1]=='\n')

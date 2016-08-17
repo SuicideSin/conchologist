@@ -79,7 +79,8 @@ void cc_handler_t::recv(mg_connection* conn,const std::string& buffer)
 	std::string line;
 	for(size_t ii=0;ii<buffer.size();++ii)
 	{
-		line+=buffer[ii];
+		//if(buffer[ii]!='\n')
+			line+=buffer[ii];
 		if(buffer[ii]=='\n'||ii+1>=buffer.size())
 		{
 			clients_m[conn].history.push_back("  "+line);
