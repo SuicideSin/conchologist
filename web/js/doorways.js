@@ -1,7 +1,7 @@
 //doorways.js
 //Version 4
 //Mike Moss
-//07/19/2016
+//08/17/2016
 
 //Manages doorways.
 //  Appends and constrains windows to constrain.
@@ -40,6 +40,28 @@ doorway_manager_t.prototype.destroy=function()
 	}
 }
 
+//Sets title to new title.
+//  Note, returns true if change was successful (aka, title already exists)
+doorway_manager_t.prototype.set_title=function(title,new_title)
+{
+	if(title==new_title||(new_title in this.doorways))
+		return false;
+	var new_doorways={};
+	for(var key in this.doorways)
+		if(key==title)
+		{
+			new_doorways[new_title]=this.doorways[key];
+			new_doorways[new_title].set_title(new_title);
+		}
+		else
+		{
+			new_doorways[key]=this.doorways[key];
+		}
+	this.doorways=new_doorways;
+	this.menu.set_title(title,new_title);
+	return true;
+}
+
 //Adds a doorway under title and returns it.
 //  Note, if doorway exists, it is simply reloaded with given options.
 doorway_manager_t.prototype.add=function(options)
@@ -51,7 +73,7 @@ doorway_manager_t.prototype.add=function(options)
 	if(!this.doorways[options.title])
 	{
 		var _this=this;
-		this.doorways[options.title]=new doorway_t(this.doorway_div);
+		this.doorways[options.title]=new doorway_t(this.doorway_div,options);
 		this.doorways[options.title].addEventListener("active",
 			function(){_this.restack();});
 	}
@@ -204,8 +226,11 @@ function doorway_t(constrain,options)
 
 	//Make buttons.
 	this.buttons=[];
-	this.make_button_m("X",function(){_this.set_minimized(true);});
-	this.make_button_m("?",function(){alert("HELP! "+_this.title);});
+	if(!options||!options.buttons)
+		this.make_button("-",function(){_this.set_minimized(true);});
+	else
+		for(var key in options.buttons)
+			this.make_button(options.buttons[key].icon,options.buttons[key].callback);
 
 	//Set title.
 	this.bar_text=document.createElement("span");
@@ -285,6 +310,14 @@ doorway_t.prototype.destroy=function()
 	}
 }
 
+//Sets title to new title.
+doorway_t.prototype.set_title=function(new_title)
+{
+	this.title=new_title;
+	this.bar_text.innerHTML="";
+	this.bar_text.appendChild(document.createTextNode(new_title));
+}
+
 //Add event listener member.
 doorway_t.prototype.addEventListener=function(listener,callback)
 {
@@ -326,7 +359,7 @@ doorway_t.prototype.load=function(data)
 		data_copy.title="";
 	this.set_minimized(data_copy.minimized);
 	this.set_active(data_copy.active);
-	this.bar_text.innerHTML=this.title=data_copy.title;
+	this.set_title(data_copy.title);
 	if(!data.min_size)
 		data.min_size=this.min_size;
 	if(data.min_size.w!=0&&!data.min_size.w)
@@ -439,7 +472,7 @@ doorway_t.prototype.set_minimized=function(minimized)
 }
 
 //Make a button with the given text and callback.
-doorway_t.prototype.make_button_m=function(text,callback)
+doorway_t.prototype.make_button=function(text,callback)
 {
 	//Create button.
 	var button=document.createElement("button");
@@ -748,6 +781,28 @@ doorway_menu_t.prototype.destroy=function()
 	this.menu=this.button_area=this.handle=this.buttons=null;
 }
 
+//Sets title to new title.
+//  Note, returns true if change was successful (aka, title already exists)
+doorway_menu_t.prototype.set_title=function(title,new_title)
+{
+	if(title==new_title||(new_title in this.buttons))
+		return false;
+	var new_buttons={};
+	for(var key in this.buttons)
+		if(key==title)
+		{
+			new_buttons[new_title]=this.buttons[key];
+			new_buttons[new_title].innerHTML="";
+			new_buttons[new_title].appendChild(document.createTextNode(new_title));
+		}
+		else
+		{
+			new_buttons[key]=this.buttons[key];
+		}
+	this.buttons=new_buttons;
+	return true;
+}
+
 //Adds a doorway button.
 doorway_menu_t.prototype.add=function(doorway)
 {
@@ -772,7 +827,7 @@ doorway_menu_t.prototype.add=function(doorway)
 			button.className="doorway menu button inactive";
 		};
 		doorway.addEventListener("inactive",button.inactive_func);
-		button.innerHTML=doorway.title;
+		button.appendChild(document.createTextNode(doorway.title));
 		button.addEventListener("click",function()
 		{
 			doorway.set_minimized(false);

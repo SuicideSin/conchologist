@@ -61,6 +61,7 @@ void cc_handler_t::add(mg_connection* conn)
 	char buffer[200];
 	mg_conn_addr_to_str(conn,buffer,200,
 		MG_SOCK_STRINGIFY_IP|MG_SOCK_STRINGIFY_PORT|MG_SOCK_STRINGIFY_REMOTE);
+	client.alive=true;
 	client.address=buffer;
 	clients_m[conn]=client;
 	if(add_cb_m)
@@ -69,6 +70,7 @@ void cc_handler_t::add(mg_connection* conn)
 
 void cc_handler_t::remove(mg_connection* conn)
 {
+	clients_m[conn].alive=false;
 	if(remove_cb_m)
 		remove_cb_m(*this,clients_m[conn]);
 	clients_m.erase(conn);
@@ -101,6 +103,13 @@ void cc_handler_t::send(const std::string& address,std::string buffer)
 			buffer+="\n";
 			mg_send(ii->first,buffer.c_str(),buffer.size());
 		}
+}
+
+void cc_handler_t::kill(const std::string& address)
+{
+	for(cc_client_map_t::iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
+		if(ii->second.address==address)
+			ii->first->flags|=MG_F_CLOSE_IMMEDIATELY;
 }
 
 cc_client_list_t cc_handler_t::list() const

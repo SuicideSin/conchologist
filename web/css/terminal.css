@@ -30,8 +30,18 @@
 	-webkit-user-select:text;
 	-moz-user-select:text;
 	-ms-user-select:text;
+}
+
+.doorways.terminal.history.active
+{
 	color:lime;
 	background-color:black;
+}
+
+.doorways.terminal.history.inactive
+{
+	color:black;
+	background-color:white;
 }
 
 .doorways.terminal.input

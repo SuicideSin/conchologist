@@ -13,8 +13,8 @@ void remove_cb(cc_handler_t& handler,const cc_client_t& client);
 void recv_cb(cc_handler_t& handler,const cc_client_t& client);
 bool web_cb(web_handler_t& handler,web_client_t& client);
 void web_close_cb(web_handler_t& handler,mg_connection* conn);
-bool service_comet(web_client_t& client);
-void service_comets();
+bool service_comet(web_client_t& client,const bool forced=false);
+void service_comets(const bool forced=false);
 
 cc_handler_t cc_handler(add_cb,remove_cb,recv_cb);
 web_handler_t web_handler("web",web_cb,web_close_cb);
@@ -29,6 +29,7 @@ void add_cb(cc_handler_t& handler,const cc_client_t& client)
 void remove_cb(cc_handler_t& handler,const cc_client_t& client)
 {
 	std::cout<<"Removed "<<client.address<<std::endl;
+	service_comets(true);
 }
 
 void recv_cb(cc_handler_t& handler,const cc_client_t& client)
@@ -60,10 +61,15 @@ bool web_cb(web_handler_t& handler,web_client_t& client)
 					comets.push_back(client);
 				}
 			}
+			else if(request["method"]=="kill")
+			{
+				std::string address(request["params"]["address"].asString());
+				cc_handler.kill(address);
+			}
 			else if(request["method"]=="write")
 			{
-				std::string address=request["params"]["address"].asString();
-				std::string line=request["params"]["line"].asString();
+				std::string address(request["params"]["address"].asString());
+				std::string line(request["params"]["line"].asString());
 				cc_handler.send(address,line);
 				service_comets();
 			}
@@ -103,7 +109,7 @@ void web_close_cb(web_handler_t& handler,mg_connection* conn)
 	comets=new_comets;
 }
 
-bool service_comet(web_client_t& client)
+bool service_comet(web_client_t& client,const bool forced)
 {
 	bool changed=false;
 	Json::Value obj;
@@ -115,6 +121,9 @@ bool service_comet(web_client_t& client)
 
 	for(cc_client_map_t::const_iterator ii=cc_clients.begin();ii!=cc_clients.end();++ii)
 	{
+		if(!ii->second.alive)
+			continue;
+
 		std::string address=ii->second.address;
 		const std::vector<std::string>& history=ii->second.history;
 
@@ -136,20 +145,19 @@ bool service_comet(web_client_t& client)
 	}
 	obj["result"]=updates;
 
-	if(changed)
+	if(changed||forced)
 	{
 		client.conn->flags&=~MG_F_USER_1;
 		web_handler.send(client,response,JSON_stringify(obj));
 	}
-
-	return changed;
+	return (changed||forced);
 }
 
-void service_comets()
+void service_comets(const bool forced)
 {
 	std::vector<web_client_t> new_comets;
 	for(size_t ii=0;ii<comets.size();++ii)
-		if(!service_comet(comets[ii]))
+		if(!service_comet(comets[ii],forced))
 			new_comets.push_back(comets[ii]);
 	comets=new_comets;
 }

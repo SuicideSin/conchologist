@@ -33,6 +33,7 @@ terminal_manager_t.prototype.update=function()
 		{
 			if(xhr.status==200)
 			{
+				var modified=[];
 				try
 				{
 					var updates=JSON.parse(xhr.responseText);
@@ -49,24 +50,51 @@ terminal_manager_t.prototype.update=function()
 								{
 									w:200,
 									h:200
-								}
+								},
+								buttons:
+								[
+									{
+										icon:'X',
+										callback:function(){_this.kill(key);}
+									},
+									{
+										icon:'-',
+										callback:function(){doorway.set_minimized(true);}
+									}
+								]
 							});
 							var old_settings=localStorage.getItem(key);
 							if(old_settings)
 							{
 								doorway.load(JSON.parse(old_settings));
 							}
-							else if(Object.keys(_this.doorway_manager.doorways).length==1)
+							else if(doorway&&Object.keys(_this.doorway_manager.doorways).length==1)
 							{
 								doorway.set_active(true);
 							}
-							_this.terminals[key]=new terminal_t(_this,doorway);
+							_this.terminals[key]=new terminal_t(_this,key,doorway);
 						}
 						if(updates.result[key]&&updates.result[key].last_count>=_this.updates[key])
 						{
 							_this.updates[key]+=updates.result[key].new_lines.length;
 							for(var line in updates.result[key].new_lines)
 								_this.terminals[key].add_line(updates.result[key].new_lines[line]);
+							modified.push(key);
+						}
+					}
+					for(var key in _this.terminals)
+					{
+						var found=false;
+						for(var ii=0;ii<modified.length;++ii)
+							if(modified[ii]==_this.terminals[key].address)
+							{
+								found=true;
+								break;
+							}
+						if(!found)
+						{
+							_this.doorway_manager.set_title(key,'Closed - '+key);
+							_this.terminals[key].killed();
 						}
 					}
 					_this.update();
@@ -96,18 +124,37 @@ terminal_manager_t.prototype.update=function()
 
 terminal_manager_t.prototype.send=function(address,line)
 {
-	var _this=this;
 	var xhr=new XMLHttpRequest();
 	xhr.open("POST","",true);
 	var data={method:"write",params:{address:address,line:line}};
 	xhr.send(JSON.stringify(data));
 }
 
-function terminal_t(manager,doorway)
+terminal_manager_t.prototype.kill=function(address)
 {
-	if(!manager||!doorway)
+	var new_terminals={};
+	for(var key in this.terminals)
+		if(this.terminals[key].address!=address)
+		{
+			new_terminals[key]=this.terminals[key];
+		}
+		else
+		{
+			var xhr=new XMLHttpRequest();
+			xhr.open("POST","",true);
+			var data={method:"kill",params:{address:address}};
+			xhr.send(JSON.stringify(data));
+			this.terminals[key].destroy();
+		}
+	this.terminals=new_terminals;
+}
+
+function terminal_t(manager,address,doorway)
+{
+	if(!manager||!address||!doorway)
 		return null;
 		this.manager=manager;
+	this.address=address;
 	this.doorway=doorway;
 	var _this=this;
 	this.history_lookup=[];
@@ -119,7 +166,7 @@ function terminal_t(manager,doorway)
 
 	this.history=document.createElement("div");
 	this.el.appendChild(this.history);
-	this.history.className="doorways terminal history";
+	this.history.className="doorways terminal history active";
 
 	this.input=document.createElement("input");
 	this.el.appendChild(this.input);
@@ -133,7 +180,7 @@ function terminal_t(manager,doorway)
 		}
 		else if(evt.keyCode==13)
 		{
-			_this.manager.send(doorway.title,this.value+"\n");
+			_this.manager.send(_this.address,this.value+"\n");
 			this.value="";
 		}
 		else if(evt.keyCode==38)
@@ -166,7 +213,7 @@ function terminal_t(manager,doorway)
 	});
 	this.interval=setInterval(function()
 	{
-		localStorage.setItem(_this.doorway.title,JSON.stringify(_this.doorway.save()));
+		localStorage.setItem(_this.address,JSON.stringify(_this.doorway.save()));
 	},500);
 }
 
@@ -201,13 +248,11 @@ terminal_t.prototype.destroy=function()
 		clearInterval(this.interval);
 		this.interval=null;
 	}
-	if(this.doorway)
+	if(this.manager&&this.doorway)
 	{
-		this.doorway.win.removeChild(this.el);
-		this.doorway=this.el=this.input=null;
+		this.manager.doorway_manager.remove(this.doorway.title);
+		this.manager=this.address=this.doorway=this.el=null;
 	}
-	if(this.manager)
-		this.manager=null;
 	this.history_lookup=this.history_ptr=null;
 }
 
@@ -218,4 +263,10 @@ terminal_t.prototype.move_cursor_end=function()
 	{
 		input.selectionStart=input.selectionEnd=input.value.length;
 	},0);
+}
+
+terminal_t.prototype.killed=function()
+{
+	this.history.className="doorways terminal history inactive";
+	this.input.disabled=true;
 }

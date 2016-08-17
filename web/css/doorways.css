@@ -7,7 +7,7 @@
 	--inactive-color:    rgb(220,220,220);
 	--inactive-color-alt:rgb(100,100,100);
 
-	--menu-width:         200px;
+	--menu-width:         240px;
 	--menu-handle-width:  32px;
 	--menu-button-height: 48px;
 	--menu-button-padding:5px;
@@ -54,6 +54,7 @@
 	padding-left:var(--resizer-width);
 	white-space:nowrap;
 	cursor:move;
+	white-space:nowrap;
 }
 
 .doorway.bar.right_border
@@ -253,6 +254,7 @@
 	-moz-user-select:none;
 	-ms-user-select:none;
 	cursor:default;
+	white-space:nowrap;
 }
 
 .doorway.menu.button.inactive

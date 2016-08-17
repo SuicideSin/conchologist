@@ -10,6 +10,7 @@
 struct cc_client_t
 {
 	std::string address;
+	bool alive;
 	std::vector<std::string> history;
 };
 
@@ -31,6 +32,7 @@ class cc_handler_t
 		void remove(mg_connection* conn);
 		void recv(mg_connection* conn,const std::string& buffer);
 		void send(const std::string& address,std::string buffer);
+		void kill(const std::string& address);
 		cc_client_list_t list() const;
 		const cc_client_map_t& map() const;
 	private:
