@@ -11,11 +11,6 @@ function terminal_manager_t(doorway_manager)
 
 terminal_manager_t.prototype.destroy=function()
 {
-	if(this.interval)
-	{
-		clearInterval(this.interval);
-		this.interval=null;
-	}
 	if(this.terminals)
 	{
 		for(var key in this.terminals)
@@ -38,8 +33,8 @@ terminal_manager_t.prototype.update=function()
 		{
 			if(xhr.status==200)
 			{
-				//try
-				//{
+				try
+				{
 					var updates=JSON.parse(xhr.responseText);
 					for(var key in updates.result)
 					{
@@ -56,15 +51,15 @@ terminal_manager_t.prototype.update=function()
 									h:200
 								}
 							});
-							if(Object.keys(_this.doorway_manager.doorways).length==1)
-							{
-								doorway.set_active(true);
-								doorway.set_minimized(false);
-							}
-
 							var old_settings=localStorage.getItem(key);
 							if(old_settings)
+							{
 								doorway.load(JSON.parse(old_settings));
+							}
+							else if(Object.keys(_this.doorway_manager.doorways).length==1)
+							{
+								doorway.set_active(true);
+							}
 							_this.terminals[key]=new terminal_t(_this,doorway);
 						}
 						if(updates.result[key]&&updates.result[key].last_count>=_this.updates[key])
@@ -75,15 +70,15 @@ terminal_manager_t.prototype.update=function()
 						}
 					}
 					_this.update();
-				//}
-				//catch(error)
-				//{
-				//	console.log(error);
-				//	setTimeout(function()
-				//	{
-				//		_this.update();
-				//	},1000);
-				//}
+				}
+				catch(error)
+				{
+					console.log(error);
+					setTimeout(function()
+					{
+						_this.update();
+					},1000);
+				}
 			}
 			else
 			{
@@ -165,7 +160,6 @@ function terminal_t(manager,doorway)
 			}
 		}
 	});
-
 	this.interval=setInterval(function()
 	{
 		localStorage.setItem(_this.doorway.title,JSON.stringify(_this.doorway.save()));

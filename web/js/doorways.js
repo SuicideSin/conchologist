@@ -111,11 +111,7 @@ doorway_manager_t.prototype.save=function()
 {
 	var arr=[];
 	for(var key in this.doorways)
-	{
-		var data=this.doorways[key].save();
-		data.z=this.doorways[key].win.style.zIndex;
-		arr.push(data);
-	}
+		arr.push(this.doorways[key].save());
 	return arr;
 }
 
@@ -123,6 +119,10 @@ doorway_manager_t.prototype.save=function()
 //  Note, does not delete old doorways before loading data.
 doorway_manager_t.prototype.load=function(data)
 {
+	data.sort(function(lhs,rhs)
+	{
+		return (lhs.z>rhs.z);
+	});
 	for(var key in data)
 		this.add(data[key]);
 }
@@ -195,7 +195,7 @@ function doorway_t(constrain,options)
 		})
 	};
 
-	//Resizer set active event listenr.
+	//Resizer set active event listener.
 	for(var key in this.resizers)
 		this.resizers[key].addEventListener("down",function()
 		{
@@ -225,7 +225,6 @@ function doorway_t(constrain,options)
 
 		//Get current size and parent's size.
 		var save=_this.save();
-
 		var parent_size=utils.get_el_size(_this.constrain);
 
 		//Constrain.
@@ -307,6 +306,7 @@ doorway_t.prototype.save=function()
 	{
 		title:this.title,
 		pos:utils.get_el_pos(this.win),
+		z:this.win.style.zIndex,
 		size:utils.get_el_size(this.win),
 		min_size:this.min_size,
 		active:this.active,
@@ -336,6 +336,11 @@ doorway_t.prototype.load=function(data)
 	this.min_size=data.min_size;
 	this.resize(data.size);
 	this.move(data.pos);
+	if(data_copy.z)
+	{
+		console.log(data_copy.title+" "+data_copy.z);
+		this.win.style.zIndex=parseInt(data_copy.z);
+	}
 }
 
 //Moves window to given position.
@@ -395,6 +400,7 @@ doorway_t.prototype.set_active=function(active)
 {
 	if(active)
 	{
+		this.set_minimized(false);
 		this.active=true;
 		this.win.className="doorway win active";
 		this.bar.className="doorway bar active";
