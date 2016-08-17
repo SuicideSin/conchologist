@@ -34,7 +34,7 @@ void remove_cb(cc_handler_t& handler,const cc_client_t& client)
 
 void recv_cb(cc_handler_t& handler,const cc_client_t& client)
 {
-	std::cout<<"Received "<<client.address<<" "<<client.history[client.history.size()-1]<<std::endl;
+	std::cout<<"Received "<<client.address<<std::endl;
 	service_comets();
 }
 

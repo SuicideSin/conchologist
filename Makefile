@@ -16,10 +16,10 @@ ifeq ($(shell uname),Darwin)
 	CFLAGS+=-Wno-deprecated-register
 endif
 
-all: handler
+all: cc_handler
 
-handler: $(HANDLER_SRC) $(JSONCPP_SRC) $(MONGOOSE_SRC)
+cc_handler: $(HANDLER_SRC) $(JSONCPP_SRC) $(MONGOOSE_SRC)
 	$(CXX) $(CFLAGS) $^ $(LIB) -o $@
 
 clean:
-	-rm -f handler handler.exe
+	-rm -f cc_handler cc_handler.exe
