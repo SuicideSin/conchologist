@@ -117,9 +117,9 @@ bool service_comet(web_client_t& client,const bool forced)
 	Json::Value request(JSON_parse(client.post_data));
 	Json::Value& counts=request["params"];
 	Json::Value updates(Json::objectValue);
-	rev_client_map_t cc_clients=rev_handler.map();
+	rev_client_map_t rev_clients=rev_handler.map();
 
-	for(rev_client_map_t::const_iterator ii=cc_clients.begin();ii!=cc_clients.end();++ii)
+	for(rev_client_map_t::const_iterator ii=rev_clients.begin();ii!=rev_clients.end();++ii)
 	{
 		if(!ii->second.alive)
 			continue;
@@ -166,11 +166,11 @@ int main()
 {
 	try
 	{
-		std::string cc_address("0.0.0.0:8080");
+		std::string rev_address("0.0.0.0:8080");
 		std::string web_address("0.0.0.0:8081");
 
-		rev_handler.connect(cc_address);
-		std::cout<<"Started cc server on "<<cc_address<<std::endl;
+		rev_handler.connect(rev_address);
+		std::cout<<"Started reverse listener on "<<rev_address<<std::endl;
 		web_handler.connect(web_address);
 		std::cout<<"Started web server on "<<web_address<<std::endl;
 		while(true)
