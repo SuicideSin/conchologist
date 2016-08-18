@@ -165,7 +165,7 @@ function terminal_t(manager,address,doorway)
 	this.history_lookup=[];
 	this.history_ptr=-1;
 	this.new_counter=0;
-	this.killed=false;
+	this.dead=false;
 
 	this.doorway.addEventListener("active",function()
 	{
