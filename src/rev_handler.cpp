@@ -1,4 +1,4 @@
-#include "cc_handler.hpp"
+#include "rev_handler.hpp"
 
 #include <stdexcept>
 
@@ -6,7 +6,7 @@ static void ev_handler(mg_connection* conn,int event,void* p)
 {
 	struct mbuf* io=&conn->recv_mbuf;
 	(void)p;
-	cc_handler_t& handler(*(cc_handler_t*)(conn->mgr->user_data));
+	rev_handler_t& handler(*(rev_handler_t*)(conn->mgr->user_data));
 	switch(event)
 	{
 		case MG_EV_ACCEPT:
@@ -24,18 +24,18 @@ static void ev_handler(mg_connection* conn,int event,void* p)
 	}
 }
 
-cc_handler_t::cc_handler_t(cc_handler_cb_t add_cb,cc_handler_cb_t remove_cb,
-	cc_handler_cb_t recv_cb):
+rev_handler_t::rev_handler_t(rev_handler_cb_t add_cb,rev_handler_cb_t remove_cb,
+	rev_handler_cb_t recv_cb):
 	connected_m(false),add_cb_m(add_cb),remove_cb_m(remove_cb),recv_cb_m(recv_cb)
 {}
 
-cc_handler_t::~cc_handler_t()
+rev_handler_t::~rev_handler_t()
 {
 	if(connected_m)
 		mg_mgr_free(&mgr_m);
 }
 
-void cc_handler_t::connect(const std::string& address)
+void rev_handler_t::connect(const std::string& address)
 {
 	if(!connected_m)
 	{
@@ -49,15 +49,15 @@ void cc_handler_t::connect(const std::string& address)
 	}
 }
 
-void cc_handler_t::update()
+void rev_handler_t::update()
 {
 	if(connected_m)
 		mg_mgr_poll(&mgr_m,1);
 }
 
-void cc_handler_t::add(mg_connection* conn)
+void rev_handler_t::add(mg_connection* conn)
 {
-	cc_client_t client;
+	rev_client_t client;
 	char buffer[200];
 	mg_conn_addr_to_str(conn,buffer,200,
 		MG_SOCK_STRINGIFY_IP|MG_SOCK_STRINGIFY_PORT|MG_SOCK_STRINGIFY_REMOTE);
@@ -68,7 +68,7 @@ void cc_handler_t::add(mg_connection* conn)
 		add_cb_m(*this,client);
 }
 
-void cc_handler_t::remove(mg_connection* conn)
+void rev_handler_t::remove(mg_connection* conn)
 {
 	clients_m[conn].alive=false;
 	if(remove_cb_m)
@@ -76,7 +76,7 @@ void cc_handler_t::remove(mg_connection* conn)
 	clients_m.erase(conn);
 }
 
-void cc_handler_t::recv(mg_connection* conn,const std::string& buffer)
+void rev_handler_t::recv(mg_connection* conn,const std::string& buffer)
 {
 	std::string line;
 	for(size_t ii=0;ii<buffer.size();++ii)
@@ -94,9 +94,9 @@ void cc_handler_t::recv(mg_connection* conn,const std::string& buffer)
 		recv_cb_m(*this,clients_m[conn]);
 }
 
-void cc_handler_t::send(const std::string& address,std::string buffer)
+void rev_handler_t::send(const std::string& address,std::string buffer)
 {
-	for(cc_client_map_t::iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
+	for(rev_client_map_t::iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
 		if(ii->second.address==address)
 		{
 			ii->second.history.push_back("> "+buffer);
@@ -105,22 +105,22 @@ void cc_handler_t::send(const std::string& address,std::string buffer)
 		}
 }
 
-void cc_handler_t::kill(const std::string& address)
+void rev_handler_t::kill(const std::string& address)
 {
-	for(cc_client_map_t::iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
+	for(rev_client_map_t::iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
 		if(ii->second.address==address)
 			ii->first->flags|=MG_F_CLOSE_IMMEDIATELY;
 }
 
-cc_client_list_t cc_handler_t::list() const
+rev_client_list_t rev_handler_t::list() const
 {
-	cc_client_list_t clients;
-	for(cc_client_map_t::const_iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
+	rev_client_list_t clients;
+	for(rev_client_map_t::const_iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
 		clients.push_back(ii->second);
 	return clients;
 }
 
-const cc_client_map_t& cc_handler_t::map() const
+const rev_client_map_t& rev_handler_t::map() const
 {
 	return clients_m;
 }

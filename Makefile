@@ -4,7 +4,7 @@ CXX=g++
 CFLAGS=-O -Wall -Wno-unused-result -I$(INC) -I$(SRC)
 LIB=
 
-HANDLER_SRC=$(SRC)/cc_handler.cpp $(SRC)/json_util.cpp $(SRC)/main.cpp $(SRC)/web_handler.cpp
+HANDLER_SRC=$(SRC)/rev_handler.cpp $(SRC)/json_util.cpp $(SRC)/main.cpp $(SRC)/web_handler.cpp
 JSONCPP_SRC=$(INC)/jsoncpp/json_reader.cpp $(INC)/jsoncpp/json_value.cpp $(INC)/jsoncpp/json_writer.cpp
 MONGOOSE_SRC=$(INC)/mongoose/mongoose.c
 
@@ -16,10 +16,10 @@ ifeq ($(shell uname),Darwin)
 	CFLAGS+=-Wno-deprecated-register
 endif
 
-all: cc_handler
+all: conchologist
 
-cc_handler: $(HANDLER_SRC) $(JSONCPP_SRC) $(MONGOOSE_SRC)
+conchologist: $(HANDLER_SRC) $(JSONCPP_SRC) $(MONGOOSE_SRC)
 	$(CXX) $(CFLAGS) $^ $(LIB) -o $@
 
 clean:
-	-rm -f cc_handler cc_handler.exe
+	-rm -f conchologist conchologist.exe

@@ -1,4 +1,4 @@
-#include "cc_handler.hpp"
+#include "rev_handler.hpp"
 #include <iostream>
 #include <jsoncpp/json.h>
 #include <json_util.hpp>
@@ -8,31 +8,31 @@
 #include <vector>
 #include "web_handler.hpp"
 
-void add_cb(cc_handler_t& handler,const cc_client_t& client);
-void remove_cb(cc_handler_t& handler,const cc_client_t& client);
-void recv_cb(cc_handler_t& handler,const cc_client_t& client);
+void add_cb(rev_handler_t& handler,const rev_client_t& client);
+void remove_cb(rev_handler_t& handler,const rev_client_t& client);
+void recv_cb(rev_handler_t& handler,const rev_client_t& client);
 bool web_cb(web_handler_t& handler,web_client_t& client);
 void web_close_cb(web_handler_t& handler,mg_connection* conn);
 bool service_comet(web_client_t& client,const bool forced=false);
 void service_comets(const bool forced=false);
 
-cc_handler_t cc_handler(add_cb,remove_cb,recv_cb);
+rev_handler_t rev_handler(add_cb,remove_cb,recv_cb);
 web_handler_t web_handler("web",web_cb,web_close_cb);
 std::vector<web_client_t> comets;
 
-void add_cb(cc_handler_t& handler,const cc_client_t& client)
+void add_cb(rev_handler_t& handler,const rev_client_t& client)
 {
 	std::cout<<"Added "<<client.address<<std::endl;
 	service_comets();
 }
 
-void remove_cb(cc_handler_t& handler,const cc_client_t& client)
+void remove_cb(rev_handler_t& handler,const rev_client_t& client)
 {
 	std::cout<<"Removed "<<client.address<<std::endl;
 	service_comets(true);
 }
 
-void recv_cb(cc_handler_t& handler,const cc_client_t& client)
+void recv_cb(rev_handler_t& handler,const rev_client_t& client)
 {
 	std::cout<<"Received "<<client.address<<std::endl;
 	service_comets();
@@ -64,13 +64,13 @@ bool web_cb(web_handler_t& handler,web_client_t& client)
 			else if(request["method"]=="kill")
 			{
 				std::string address(request["params"]["address"].asString());
-				cc_handler.kill(address);
+				rev_handler.kill(address);
 			}
 			else if(request["method"]=="write")
 			{
 				std::string address(request["params"]["address"].asString());
 				std::string line(request["params"]["line"].asString());
-				cc_handler.send(address,line);
+				rev_handler.send(address,line);
 				service_comets();
 			}
 			else
@@ -117,9 +117,9 @@ bool service_comet(web_client_t& client,const bool forced)
 	Json::Value request(JSON_parse(client.post_data));
 	Json::Value& counts=request["params"];
 	Json::Value updates(Json::objectValue);
-	cc_client_map_t cc_clients=cc_handler.map();
+	rev_client_map_t cc_clients=rev_handler.map();
 
-	for(cc_client_map_t::const_iterator ii=cc_clients.begin();ii!=cc_clients.end();++ii)
+	for(rev_client_map_t::const_iterator ii=cc_clients.begin();ii!=cc_clients.end();++ii)
 	{
 		if(!ii->second.alive)
 			continue;
@@ -169,13 +169,13 @@ int main()
 		std::string cc_address("0.0.0.0:8080");
 		std::string web_address("0.0.0.0:8081");
 
-		cc_handler.connect(cc_address);
+		rev_handler.connect(cc_address);
 		std::cout<<"Started cc server on "<<cc_address<<std::endl;
 		web_handler.connect(web_address);
 		std::cout<<"Started web server on "<<web_address<<std::endl;
 		while(true)
 		{
-			cc_handler.update();
+			rev_handler.update();
 			web_handler.update();
 		}
 	}
