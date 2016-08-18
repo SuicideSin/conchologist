@@ -98,8 +98,8 @@ terminal_manager_t.prototype.update=function()
 						if(!found)
 						{
 							_this.doorway_manager.set_title(_this.terminals[key].doorway.title,
-								'Killed - '+key);
-							_this.terminals[key].killed();
+								'Dead - '+key);
+							_this.terminals[key].kill();
 						}
 					}
 					_this.update();
@@ -165,11 +165,15 @@ function terminal_t(manager,address,doorway)
 	this.history_lookup=[];
 	this.history_ptr=-1;
 	this.new_counter=0;
+	this.killed=false;
 
 	this.doorway.addEventListener("active",function()
 	{
-		_this.new_counter=0;
-		_this.manager.doorway_manager.set_title(_this.doorway.title,_this.address);
+		if(!_this.dead)
+		{
+			_this.new_counter=0;
+			_this.manager.doorway_manager.set_title(_this.doorway.title,_this.address);
+		}
 	});
 
 	this.el=document.createElement("div");
@@ -253,7 +257,7 @@ terminal_t.prototype.add_line=function(line)
 	if(this.history_ptr<0)
 		this.history_ptr=0;
 
-	if(!this.doorway.active)
+	if(!this.doorway.active&&!this.dead)
 	{
 		++this.new_counter;
 		this.manager.doorway_manager.set_title(this.doorway.title,
@@ -285,8 +289,9 @@ terminal_t.prototype.move_cursor_end=function()
 	},0);
 }
 
-terminal_t.prototype.killed=function()
+terminal_t.prototype.kill=function()
 {
+	this.dead=true;
 	this.history.className="doorways terminal history inactive";
 	this.input.disabled=true;
 }
