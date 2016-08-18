@@ -271,6 +271,7 @@ function doorway_t(constrain,options)
 	window.addEventListener("resize",this.resize_ev_m);
 	this.win.addEventListener("mousedown",function(event){_this.set_active(true);});
 	this.bar.addEventListener("mousedown",function(event){_this.down_m(event);});
+	this.bar.addEventListener("dblclick",function(event){_this.maximize();});
 	this.bar.addEventListener("touchstart",function(event){_this.down_m(event);});
 	this.move_ev_m=function(event){_this.move_m(event);};
 	window.addEventListener("mousemove",this.move_ev_m);
