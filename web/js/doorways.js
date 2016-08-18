@@ -1,7 +1,7 @@
 //doorways.js
 //Version 4
 //Mike Moss
-//08/17/2016
+//08/18/2016
 
 //Manages doorways.
 //  Appends and constrains windows to constrain.
@@ -452,6 +452,14 @@ doorway_t.prototype.set_active=function(active)
 		for(var key in this.event_listeners.inactive)
 			this.event_listeners.inactive[key]();
 	}
+}
+
+//Make window full size of screen.
+doorway_t.prototype.maximize=function()
+{
+	this.move({x:0,y:0});
+	this.resize(utils.get_el_size(this.constrain));
+	this.set_active(true);
 }
 
 //Make window hidden or shown.

@@ -58,6 +58,10 @@ terminal_manager_t.prototype.update=function()
 										callback:function(){_this.kill(key);}
 									},
 									{
+										icon:'[ ]',
+										callback:function(){doorway.maximize();}
+									},
+									{
 										icon:'-',
 										callback:function(){doorway.set_minimized(true);}
 									}
@@ -93,7 +97,7 @@ terminal_manager_t.prototype.update=function()
 							}
 						if(!found)
 						{
-							_this.doorway_manager.set_title(key,'Closed - '+key);
+							_this.doorway_manager.set_title(key,'Killed - '+key);
 							_this.terminals[key].killed();
 						}
 					}
