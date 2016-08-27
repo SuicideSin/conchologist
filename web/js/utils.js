@@ -70,7 +70,7 @@ utils_t.prototype.setEventListener=function(el,listener,callback)
 {
 	//Check listener...
 	var found=false;
-	for(var key in el.event_listeners)
+	for(let key in el.event_listeners)
 		if(key==listener)
 		{
 			found=true;
@@ -92,7 +92,7 @@ utils_t.prototype.unsetEventListener=function(el,listener,callback)
 {
 	//Check listener...
 	var found=false;
-	for(var key in el.event_listeners)
+	for(let key in el.event_listeners)
 		if(key==listener)
 		{
 			found=true;
