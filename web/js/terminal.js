@@ -13,7 +13,7 @@ terminal_manager_t.prototype.destroy=function()
 {
 	if(this.terminals)
 	{
-		for(var key in this.terminals)
+		for(let key in this.terminals)
 			this.terminals[key].destroy();
 		this.terminals=null;
 	}
@@ -37,7 +37,7 @@ terminal_manager_t.prototype.update=function()
 				try
 				{
 					var updates=JSON.parse(xhr.responseText);
-					for(var key in updates.result)
+					for(let key in updates.result)
 					{
 						if(!(key in _this.terminals))
 						{
@@ -81,15 +81,15 @@ terminal_manager_t.prototype.update=function()
 						if(updates.result[key]&&updates.result[key].last_count>=_this.updates[key])
 						{
 							_this.updates[key]+=updates.result[key].new_lines.length;
-							for(var line in updates.result[key].new_lines)
+							for(let line in updates.result[key].new_lines)
 								_this.terminals[key].add_line(updates.result[key].new_lines[line]);
 							modified.push(key);
 						}
 					}
-					for(var key in _this.terminals)
+					for(let key in _this.terminals)
 					{
 						var found=false;
-						for(var ii=0;ii<modified.length;++ii)
+						for(let ii=0;ii<modified.length;++ii)
 							if(modified[ii]==_this.terminals[key].address)
 							{
 								found=true;
@@ -138,7 +138,7 @@ terminal_manager_t.prototype.send=function(address,line)
 terminal_manager_t.prototype.kill=function(address)
 {
 	var new_terminals={};
-	for(var key in this.terminals)
+	for(let key in this.terminals)
 		if(this.terminals[key].address!=address)
 		{
 			new_terminals[key]=this.terminals[key];

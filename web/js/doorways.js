@@ -1,7 +1,7 @@
 //doorways.js
 //Version 4
 //Mike Moss
-//08/18/2016
+//08/27/2016
 
 //Manages doorways.
 //  Appends and constrains windows to constrain.
@@ -28,7 +28,7 @@ doorway_manager_t.prototype.destroy=function()
 	}
 	if(this.doorways)
 	{
-		for(var key in this.doorways)
+		for(let key in this.doorways)
 			this.doorways[key].destroy();
 		this.doorways=null;
 	}
@@ -47,7 +47,7 @@ doorway_manager_t.prototype.set_title=function(title,new_title)
 	if(title==new_title||(new_title in this.doorways))
 		return false;
 	var new_doorways={};
-	for(var key in this.doorways)
+	for(let key in this.doorways)
 		if(key==title)
 		{
 			new_doorways[new_title]=this.doorways[key];
@@ -87,7 +87,7 @@ doorway_manager_t.prototype.remove=function(title)
 {
 	this.menu.remove(title);
 	var new_doorways={};
-	for(var key in this.doorways)
+	for(let key in this.doorways)
 		if(key!=title)
 			new_doorways[key]=this.doorways[key];
 		else
@@ -102,7 +102,7 @@ doorway_manager_t.prototype.restack=function()
 	//Sort windows by zIndex.
 	//  Note: Doesn't include new windows or top most window (zIndex=="").
 	var arr=[];
-	for(var key in this.doorways)
+	for(let key in this.doorways)
 		if(this.doorways[key].win.style.zIndex!="")
 			arr.push(this.doorways[key]);
 	arr.sort(function(lhs,rhs)
@@ -111,7 +111,7 @@ doorway_manager_t.prototype.restack=function()
 	});
 
 	//Set zIndex, make inactive.
-	for(var ii=0;ii<arr.length;++ii)
+	for(let ii=0;ii<arr.length;++ii)
 	{
 		arr[ii].win.style.zIndex=ii;
 		arr[ii].set_active(false);
@@ -119,7 +119,7 @@ doorway_manager_t.prototype.restack=function()
 
 	//Set new windows.
 	var count=arr.length;
-	for(var key in this.doorways)
+	for(let key in this.doorways)
 		if(this.doorways[key].win.style.zIndex=="")
 			this.doorways[key].win.style.zIndex=count++;
 
@@ -132,7 +132,7 @@ doorway_manager_t.prototype.restack=function()
 doorway_manager_t.prototype.save=function()
 {
 	var arr=[];
-	for(var key in this.doorways)
+	for(let key in this.doorways)
 		arr.push(this.doorways[key].save());
 	return arr;
 }
@@ -145,7 +145,7 @@ doorway_manager_t.prototype.load=function(data)
 	{
 		return (lhs.z>rhs.z);
 	});
-	for(var key in data)
+	for(let key in data)
 		this.add(data[key]);
 }
 
@@ -218,7 +218,7 @@ function doorway_t(constrain,options)
 	};
 
 	//Resizer set active event listener.
-	for(var key in this.resizers)
+	for(let key in this.resizers)
 		this.resizers[key].addEventListener("down",function()
 		{
 			_this.set_active(true);
@@ -229,7 +229,7 @@ function doorway_t(constrain,options)
 	if(!options||!options.buttons)
 		this.make_button("-",function(){_this.set_minimized(true);});
 	else
-		for(var key in options.buttons)
+		for(let key in options.buttons)
 			this.make_button(options.buttons[key].icon,options.buttons[key].callback);
 
 	//Set title.
@@ -305,7 +305,7 @@ doorway_t.prototype.destroy=function()
 	//Cleanup resizers.
 	if(this.resizers)
 	{
-		for(var key in this.resizers)
+		for(let key in this.resizers)
 			this.resizers[key].destroy();
 		this.resizers=null;
 	}
@@ -436,10 +436,10 @@ doorway_t.prototype.set_active=function(active)
 		this.win.className="doorway win active";
 		this.bar.className="doorway bar active";
 		this.bar_right_border.className="doorway bar right_border active";
-		for(var key in this.buttons)
+		for(let key in this.buttons)
 			this.buttons[key].className="doorway bar button active";
 		this.win.style.zIndex="";
-		for(var key in this.event_listeners.active)
+		for(let key in this.event_listeners.active)
 			this.event_listeners.active[key]();
 	}
 	else
@@ -448,9 +448,9 @@ doorway_t.prototype.set_active=function(active)
 		this.win.className="doorway win inactive";
 		this.bar.className="doorway bar inactive";
 		this.bar_right_border.className="doorway bar right_border inactive";
-		for(var key in this.buttons)
+		for(let key in this.buttons)
 			this.buttons[key].className="doorway bar button inactive";
-		for(var key in this.event_listeners.inactive)
+		for(let key in this.event_listeners.inactive)
 			this.event_listeners.inactive[key]();
 	}
 }
@@ -676,7 +676,7 @@ doorway_resizer_t.prototype.removeEventListener=function(listener,callback)
 doorway_resizer_t.prototype.down_m=function(event)
 {
 	event.preventDefault();
-	for(var key in this.event_listeners.down)
+	for(let key in this.event_listeners.down)
 		this.event_listeners.down[key](event);
 	this.down_offset=utils.get_event_pos(event);
 	var offset=utils.get_el_pos(this.handle);
@@ -753,7 +753,7 @@ function doorway_menu_t(menu_div,constrain)
 		}
 		_this.handle.className="doorway menu handle";
 		_this.handle_text.className="doorway menu handle text";
-		for(var key in _this.buttons)
+		for(let key in _this.buttons)
 			if(_this.buttons[key]&&_this.buttons[key].doorway)
 				_this.buttons[key].doorway.resize_ev_m();
 	});
@@ -797,7 +797,7 @@ doorway_menu_t.prototype.set_title=function(title,new_title)
 	if(title==new_title||(new_title in this.buttons))
 		return false;
 	var new_buttons={};
-	for(var key in this.buttons)
+	for(let key in this.buttons)
 		if(key==title)
 		{
 			new_buttons[new_title]=this.buttons[key];
@@ -850,7 +850,7 @@ doorway_menu_t.prototype.add=function(doorway)
 doorway_menu_t.prototype.remove=function(title)
 {
 	var new_buttons={};
-	for(var key in this.buttons)
+	for(let key in this.buttons)
 		if(key!=title)
 		{
 			new_buttons[key]=this.buttons[key];
