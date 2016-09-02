@@ -34,8 +34,8 @@ terminal_manager_t.prototype.update=function()
 			if(xhr.status==200)
 			{
 				var modified=[];
-				try
-				{
+				//try
+				//{
 					var updates=JSON.parse(xhr.responseText);
 					for(let key in updates.result)
 					{
@@ -69,20 +69,26 @@ terminal_manager_t.prototype.update=function()
 							});
 							var old_settings=localStorage.getItem(key);
 							if(old_settings)
-							{
 								doorway.load(JSON.parse(old_settings));
-							}
 							else if(doorway&&Object.keys(_this.doorway_manager.doorways).length==1)
-							{
-								doorway.set_active(true);
-							}
+								doorway.maximize();
+							doorway.maximize();
 							_this.terminals[key]=new terminal_t(_this,key,doorway);
 						}
 						if(updates.result[key]&&updates.result[key].last_count>=_this.updates[key])
 						{
-							_this.updates[key]+=updates.result[key].new_lines.length;
-							for(let line in updates.result[key].new_lines)
-								_this.terminals[key].add_line(updates.result[key].new_lines[line]);
+							var chunks=updates.result[key].chunks;
+							_this.updates[key]+=chunks.length;
+							for(let chunk in chunks)
+							{
+								var lines=chunks[chunk].split('\n');
+								for(let ii=0;ii<lines.length;++ii)
+								{
+									if(ii+1<lines.length||lines[ii][lines[ii].length-1]=='\n')
+										lines[ii]+='\n';
+									_this.terminals[key].add_line(lines[ii]);
+								}
+							}
 							modified.push(key);
 						}
 					}
@@ -96,22 +102,18 @@ terminal_manager_t.prototype.update=function()
 								break;
 							}
 						if(!found)
-						{
-							//_this.doorway_manager.set_title(_this.terminals[key].doorway.title,
-							//	'Dead - '+key);
 							_this.terminals[key].kill();
-						}
 					}
 					_this.update();
-				}
-				catch(error)
-				{
-					console.log(error);
-					setTimeout(function()
-					{
-						_this.update();
-					},1000);
-				}
+				//}
+				//catch(error)
+				//{
+				//	console.log(error);
+				//	setTimeout(function()
+				//	{
+				//		_this.update();
+				//	},1000);
+				//}
 			}
 			else
 			{
@@ -164,17 +166,7 @@ function terminal_t(manager,address,doorway)
 	var _this=this;
 	this.history_lookup=[];
 	this.history_ptr=-1;
-	//this.new_counter=0;
 	this.dead=false;
-
-	//this.doorway.addEventListener("active",function()
-	//{
-	//	if(!_this.dead)
-	//	{
-	//		_this.new_counter=0;
-	//		_this.manager.doorway_manager.set_title(_this.doorway.title,_this.address);
-	//	}
-	//});
 
 	this.el=document.createElement("div");
 	this.doorway.win.appendChild(this.el);
@@ -239,30 +231,20 @@ terminal_t.prototype.add_line=function(line)
 	var current_scroll=this.history.scrollHeight-this.history.scrollTop;
 	var scroll_end=(Math.abs(current_scroll-this.history.offsetHeight)<20);
 	var _this=this;
-	//if(line.substr(0,2)!="> ")
-	{
-		this.history.appendChild(document.createTextNode(line));
-		if(line.length>0&&line[line.length-1]=='\n')
-			this.history.appendChild(document.createElement("br"));
-	}
+	this.history.appendChild(document.createTextNode(line));
+	if(line.length>0&&line[line.length-1]=='\n')
+		this.history.appendChild(document.createElement("br"));
 	if(scroll_end)
 		setTimeout(function()
 		{
 			_this.history.scrollTop=_this.history.scrollHeight+1000;
 		},100);
-	if(line.substr(0,2)=="> "&&(this.history_lookup.length==0||
+	if(line.substr(0,2)=="$ "&&(this.history_lookup.length==0||
 		this.history_lookup[this.history_lookup.length-1]!=line.substr(2,line.length)))
 		this.history_lookup.push(line.substr(2,line.length));
 	this.history_ptr=this.history_lookup.length;
 	if(this.history_ptr<0)
 		this.history_ptr=0;
-
-	//if(!this.doorway.active&&!this.dead)
-	//{
-	//	++this.new_counter;
-	//	this.manager.doorway_manager.set_title(this.doorway.title,
-	//		"("+this.new_counter+") "+this.address);
-	//}
 }
 
 terminal_t.prototype.destroy=function()

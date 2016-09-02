@@ -81,9 +81,8 @@ void rev_handler_t::recv(mg_connection* conn,const std::string& buffer)
 	std::string line;
 	for(size_t ii=0;ii<buffer.size();++ii)
 	{
-		//if(buffer[ii]!='\n')
-			line+=buffer[ii];
-		if(buffer[ii]=='\n'||ii+1>=buffer.size())
+		line+=buffer[ii];
+		if(ii+1>=buffer.size())
 		{
 			clients_m[conn].history.push_back("  "+line);
 			line="";
@@ -99,8 +98,7 @@ void rev_handler_t::send(const std::string& address,std::string buffer)
 	for(rev_client_map_t::iterator ii=clients_m.begin();ii!=clients_m.end();++ii)
 		if(ii->second.address==address)
 		{
-			ii->second.history.push_back("> "+buffer);
-			buffer+="\n";
+			ii->second.history.push_back("$ "+buffer);
 			mg_send(ii->first,buffer.c_str(),buffer.size());
 		}
 }

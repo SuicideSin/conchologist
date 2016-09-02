@@ -134,14 +134,14 @@ bool service_comet(web_client_t& client,const bool forced)
 		}
 
 		size_t line_size=counts[address].asUInt();
-		Json::Value new_lines(Json::arrayValue);
+		Json::Value chunks(Json::arrayValue);
 		for(size_t jj=line_size;jj<history.size();++jj)
 		{
-			new_lines.append(history[jj]);
+			chunks.append(history[jj]);
 			changed=true;
 		}
 		updates[address]["last_count"]=(Json::LargestUInt(line_size));
-		updates[address]["new_lines"]=new_lines;
+		updates[address]["chunks"]=chunks;
 	}
 	obj["result"]=updates;
 
