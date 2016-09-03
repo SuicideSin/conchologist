@@ -4,14 +4,29 @@
 #include <cstdlib>
 #include <map>
 #include <mongoose/mongoose.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
+
+enum rev_status_t
+{
+	UNKNOWN,
+	PLAINTEXT,
+	RECV_PUBKEY,
+	ENCRYPTED
+};
 
 struct rev_client_t
 {
 	std::string address;
 	bool alive;
-	std::vector<std::string> history;
+	rev_status_t status;
+	int64_t timeout;
+	std::string scratch;
+	std::vector<std::string> chunks;
+	std::vector<std::string> buffered_cmds;
+	std::string secret;
+	std::string iv;
 };
 
 class rev_handler_t;
@@ -30,7 +45,7 @@ class rev_handler_t
 		void update();
 		void add(mg_connection* conn);
 		void remove(mg_connection* conn);
-		void recv(mg_connection* conn,const std::string& buffer);
+		void recv(mg_connection* conn,std::string buffer);
 		void send(const std::string& address,std::string buffer);
 		void kill(const std::string& address);
 		rev_client_list_t list() const;

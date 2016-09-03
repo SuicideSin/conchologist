@@ -119,29 +119,27 @@ bool service_comet(web_client_t& client,const bool forced)
 	Json::Value updates(Json::objectValue);
 	rev_client_map_t rev_clients=rev_handler.map();
 
-	for(rev_client_map_t::const_iterator ii=rev_clients.begin();ii!=rev_clients.end();++ii)
+	for(rev_client_map_t::const_iterator it=rev_clients.begin();it!=rev_clients.end();++it)
 	{
-		if(!ii->second.alive)
+		const rev_client_t& client=it->second;
+		if(!client.alive)
 			continue;
 
-		std::string address=ii->second.address;
-		const std::vector<std::string>& history=ii->second.history;
-
-		if(!counts.isMember(address))
+		if(!counts.isMember(client.address))
 		{
-			counts[address]=0;
+			counts[client.address]=0;
 			changed=true;
 		}
 
-		size_t line_size=counts[address].asUInt();
+		size_t line_size=counts[client.address].asUInt();
 		Json::Value chunks(Json::arrayValue);
-		for(size_t jj=line_size;jj<history.size();++jj)
+		for(size_t jj=line_size;jj<client.chunks.size();++jj)
 		{
-			chunks.append(history[jj]);
+			chunks.append(client.chunks[jj]);
 			changed=true;
 		}
-		updates[address]["last_count"]=(Json::LargestUInt(line_size));
-		updates[address]["chunks"]=chunks;
+		updates[client.address]["last_count"]=(Json::LargestUInt(line_size));
+		updates[client.address]["chunks"]=chunks;
 	}
 	obj["result"]=updates;
 
