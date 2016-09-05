@@ -1,6 +1,7 @@
 #include "rev_handler.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <msl/crypto.hpp>
 #include <msl/string.hpp>
@@ -185,10 +186,22 @@ void rev_handler_t::recv(mg_connection* conn,std::string buffer)
 	{
 		try
 		{
-			buffer=unpack_aes(buffer,client.secret,client.iv);
-			client.chunks.push_back("  "+buffer);
-			if(recv_cb_m)
-				recv_cb_m(*this,client);
+			std::string rm;
+			std::string line;
+			for(size_t ii=0;ii<buffer.size();++ii)
+			{
+				line+=buffer[ii];
+				if(isspace(buffer[ii]))
+				{
+					line=unpack_aes(line,client.secret,client.iv);
+					client.chunks.push_back("  "+line);
+					rm+=line;
+					line="";
+					if(recv_cb_m)
+						recv_cb_m(*this,client);
+				}
+			}
+			buffer=buffer.substr(rm.size(),buffer.size()-rm.size());
 		}
 		catch(...)
 		{

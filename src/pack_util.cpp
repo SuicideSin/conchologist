@@ -13,6 +13,8 @@ std::string pack_rsa(const std::string& plain,const std::string& key)
 std::string unpack_rsa(const std::string& cipher,const std::string& key)
 {
 	std::string plain=cipher;
+	while(msl::starts_with(plain,"\n"))
+		plain=plain.substr(1,plain.size()-1);
 	while(msl::ends_with(plain,"\n"))
 		plain=plain.substr(0,plain.size()-1);
 	plain=msl::from_hex_string(plain);
@@ -30,6 +32,8 @@ std::string pack_aes(const std::string& plain,const std::string& key,const std::
 std::string unpack_aes(const std::string& cipher,const std::string& key,const std::string& iv)
 {
 	std::string plain=cipher;
+	while(msl::starts_with(plain,"\n"))
+		plain=plain.substr(1,plain.size()-1);
 	while(msl::ends_with(plain,"\n"))
 		plain=plain.substr(0,plain.size()-1);
 	plain=msl::from_hex_string(plain);
