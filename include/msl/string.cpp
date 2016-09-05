@@ -4,6 +4,7 @@
 #include <cctype>
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
 
 std::string msl::to_lower(std::string str)
 {
@@ -34,16 +35,25 @@ std::string msl::from_hex_string(std::string str)
 	if(str.size()%2!=0)
 		str.insert(0,"0");
 
+	str=msl::to_lower(str);
+
 	size_t pos=0;
 	std::string temp_byte;
 
 	while(pos<str.size())
 	{
+		if(!((str[pos]>='0'&&str[pos]<='9')||(str[pos]>='a'&&str[pos]<='f')))
+			throw std::runtime_error("msl::from_hex_string() - Non-hex character in string.");
+
 		temp_byte+=str[pos];
 
 		if(temp_byte.size()>=2||pos+1==str.size())
 		{
-			ret+=std::stoi("0x"+temp_byte,0,16);
+			std::istringstream istr("0x"+temp_byte);
+			int real_byte;
+			if(!(istr>>std::hex>>real_byte))
+				throw std::runtime_error("msl::from_hex_string() - String conversion error.");
+			ret+=real_byte;
 			temp_byte="";
 		}
 

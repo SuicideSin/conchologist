@@ -13,7 +13,8 @@
 #include <openssl/rand.h>
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
-#include <cstdint>
+#include <sstream>
+#include <stdint.h>
 
 #define RSA_PKCS1_OAEP_PADDING_SIZE		41
 
@@ -24,6 +25,13 @@
 
 #define AES_BLOCK_SIZE					16
 #define AES256_KEY_SIZE					32
+
+template<typename T> static std::string to_string(const T& xx)
+{
+	std::ostringstream ostr;
+	ostr<<xx;
+	return ostr.str();
+}
 
 namespace msl
 {
@@ -115,24 +123,24 @@ void msl::generate_rsa(const size_t bits,std::string& private_key,std::string& p
 std::string msl::encrypt_rsa(const std::string& plain,const std::string& key)
 {
 	std::string cipher;
-	BIO* keybio=nullptr;
-	RSA* rsa=nullptr;
+	BIO* keybio=NULL;
+	RSA* rsa=NULL;
 
 	try
 	{
 		keybio=BIO_new_mem_buf((uint8_t*)key.data(),-1);
 
-		if(keybio==nullptr)
+		if(keybio==NULL)
 			throw msl::encryption_error("msl::encrypt_rsa() - BIO_new_mem_buf failed.");
 
-		rsa=PEM_read_bio_RSA_PUBKEY(keybio,&rsa,nullptr,nullptr);
+		rsa=PEM_read_bio_RSA_PUBKEY(keybio,&rsa,NULL,NULL);
 
-		if(rsa==nullptr)
+		if(rsa==NULL)
 			throw msl::encryption_error("msl::encrypt_rsa() - PEM_read_bio_RSA_PUBKEY failed.");
 
 		if(plain.size()>(size_t)RSA_size(rsa)-RSA_PKCS1_OAEP_PADDING_SIZE)
 			throw msl::encryption_error("msl::encrypt_rsa() - Invalid plain text size ("+
-				std::to_string((size_t)RSA_size(rsa)-RSA_PKCS1_OAEP_PADDING_SIZE)+" max).");
+				to_string((size_t)RSA_size(rsa)-RSA_PKCS1_OAEP_PADDING_SIZE)+" max).");
 
 		cipher.resize(RSA_size(rsa));
 
@@ -157,24 +165,24 @@ std::string msl::encrypt_rsa(const std::string& plain,const std::string& key)
 std::string msl::decrypt_rsa(const std::string& cipher,const std::string& key)
 {
 	std::string plain;
-	BIO* keybio=nullptr;
-	RSA* rsa=nullptr;
+	BIO* keybio=NULL;
+	RSA* rsa=NULL;
 
 	try
 	{
 		keybio=BIO_new_mem_buf((uint8_t*)key.data(),-1);
 
-		if(keybio==nullptr)
+		if(keybio==NULL)
 			throw msl::decryption_error("msl::decrypt_rsa() - BIO_new_mem_buf failed.");
 
-		rsa=PEM_read_bio_RSAPrivateKey(keybio,&rsa,nullptr,nullptr);
+		rsa=PEM_read_bio_RSAPrivateKey(keybio,&rsa,NULL,NULL);
 
-		if(rsa==nullptr)
+		if(rsa==NULL)
 			throw msl::decryption_error("msl::decrypt_rsa() - PEM_read_bio_RSAPrivateKey failed.");
 
 		if(cipher.size()>(size_t)RSA_size(rsa))
 			throw msl::decryption_error("msl::decrypt_rsa() - Invalid cipher text size ("+
-				std::to_string((size_t)RSA_size(rsa))+" max).");
+				to_string((size_t)RSA_size(rsa))+" max).");
 
 		plain.resize(RSA_size(rsa));
 
@@ -200,7 +208,7 @@ std::string msl::encrypt_aes256(const std::string& plain,const std::string& key,
 {
 	std::string cipher;
 	cipher.resize((plain.size()/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE);
-	EVP_CIPHER_CTX* ctx=nullptr;
+	EVP_CIPHER_CTX* ctx=NULL;
 
 	try
 	{
@@ -208,12 +216,12 @@ std::string msl::encrypt_aes256(const std::string& plain,const std::string& key,
 
 		if(key.size()!=AES256_KEY_SIZE)
 			throw msl::encryption_error("msl::encrypt_aes256() - Given key size is invalid ("+
-				std::to_string(AES256_KEY_SIZE)+" bytes).");
+				to_string(AES256_KEY_SIZE)+" bytes).");
 
 		int temp_length;
 		int temp_unaligned_length;
 
-		if(ctx==nullptr)
+		if(ctx==NULL)
 			throw msl::encryption_error("msl::encrypt_aes256() - Creating a EVP_CIPHER_CTX failed.");
 
 		if(EVP_CIPHER_CTX_set_padding(ctx,1)==0)
@@ -245,7 +253,7 @@ std::string msl::decrypt_aes256(const std::string& cipher,const std::string& key
 {
 	std::string plain;
 	plain.resize((cipher.size()/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE);
-	EVP_CIPHER_CTX* ctx=nullptr;
+	EVP_CIPHER_CTX* ctx=NULL;
 
 	try
 	{
@@ -253,12 +261,12 @@ std::string msl::decrypt_aes256(const std::string& cipher,const std::string& key
 
 		if(key.size()!=AES256_KEY_SIZE)
 			throw msl::decryption_error("msl::decrypt_aes256() - Given key size is invalid ("+
-				std::to_string(AES256_KEY_SIZE)+" bytes).");
+				to_string(AES256_KEY_SIZE)+" bytes).");
 
 		int temp_length;
 		int temp_unaligned_length;
 
-		if(ctx==nullptr)
+		if(ctx==NULL)
 			throw msl::decryption_error("msl::decrypt_aes256() - Creating a EVP_CIPHER_CTX failed.");
 
 		if(EVP_CIPHER_CTX_set_padding(ctx,1)==0)
