@@ -1,7 +1,7 @@
 SRC=src
 INC=include
 CXX=g++
-CFLAGS=-O -Wall -Wno-unused-result -I$(INC) -I$(SRC)
+CFLAGS=-O -Wall -Wno-unused-result -I$(INC) -I$(SRC) -DMG_DISABLE_SOCKETPAIR -DMONGOOSE_IDLE_TIMEOUT_SECONDS=1
 LIB=
 
 HANDLER_SRC=$(SRC)/rev_handler.cpp $(SRC)/json_util.cpp $(SRC)/main.cpp $(SRC)/pack_util.cpp $(SRC)/web_handler.cpp

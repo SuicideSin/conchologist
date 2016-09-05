@@ -87,6 +87,7 @@ void rev_handler_t::update()
 				if(recv_cb_m)
 					recv_cb_m(*this,client);
 			}
+			it->first->last_io_time=mg_time();
 		}
 	}
 }
