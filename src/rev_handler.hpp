@@ -61,7 +61,6 @@ class rev_handler_t
 		rev_handler_cb_t add_cb_m;
 		rev_handler_cb_t remove_cb_m;
 		rev_handler_cb_t recv_cb_m;
-		std::string public_key_m;
 		std::string private_key_m;
 };
 

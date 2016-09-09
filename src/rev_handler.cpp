@@ -52,14 +52,6 @@ rev_handler_t::rev_handler_t(rev_handler_cb_t add_cb,rev_handler_cb_t remove_cb,
 	connected_m(false),add_cb_m(add_cb),remove_cb_m(remove_cb),recv_cb_m(recv_cb)
 {
 	std::string line;
-
-	std::ifstream pubf("public_key.pem");
-	if(!pubf)
-		throw std::runtime_error("CC handler could not find \"public_key.pem\".");
-	while(std::getline(pubf,line))
-		public_key_m+=line+"\n";
-	pubf.close();
-
 	std::ifstream privf("private_key.pem");
 	if(!privf)
 		throw std::runtime_error("CC handler could not find \"private_key.pem\".");
@@ -195,7 +187,7 @@ void rev_handler_t::recv(mg_connection* conn,std::string buffer)
 				try
 				{
 					buffer=buffer.substr(ii+1,buffer.size()-ii-1);
-					std::string challenge=pack_hex(msl::encrypt_rsa(unpack_hex(client.scratch),public_key_m));
+					std::string challenge=pack_hex(msl::decrypt_rsa(unpack_hex(client.scratch),private_key_m));
 					client.scratch="";
 					mg_send(conn,challenge.c_str(),challenge.size());
 					try
@@ -211,13 +203,13 @@ void rev_handler_t::recv(mg_connection* conn,std::string buffer)
 					}
 					catch(...)
 					{
-						std::cout<<client.address<<" Invalid Client Public Key"<<std::endl;
+						std::cout<<client.address<<" Error Sending Symmetric Key"<<std::endl;
 						kill(client.address);
 					}
 				}
 				catch(...)
 				{
-					std::cout<<client.address<<" Invalid Server Public Key"<<std::endl;
+					std::cout<<client.address<<" Invalid Client Challenge"<<std::endl;
 					kill(client.address);
 				}
 				break;
