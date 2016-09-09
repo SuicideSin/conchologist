@@ -13,6 +13,7 @@ enum rev_status_t
 	UNKNOWN,
 	PLAINTEXT,
 	RECV_PUBKEY,
+	CHALLENGE,
 	ENCRYPTED
 };
 
@@ -22,6 +23,7 @@ struct rev_client_t
 	bool alive;
 	rev_status_t status;
 	int64_t timeout;
+	std::string pubkey;
 	std::string scratch;
 	std::vector<std::string> chunks;
 	std::vector<std::string> buffered_cmds;
@@ -59,6 +61,8 @@ class rev_handler_t
 		rev_handler_cb_t add_cb_m;
 		rev_handler_cb_t remove_cb_m;
 		rev_handler_cb_t recv_cb_m;
+		std::string public_key_m;
+		std::string private_key_m;
 };
 
 #endif

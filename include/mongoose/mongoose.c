@@ -684,6 +684,33 @@ double cs_time() {
   return now;
 }
 #ifdef MG_MODULE_LINES
+#line 1 "./src/../../common/cs_endian.h"
+#endif
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+#ifndef CS_COMMON_CS_ENDIAN_H_
+#define CS_COMMON_CS_ENDIAN_H_
+
+/*
+ * clang with std=-c99 uses __LITTLE_ENDIAN, by default
+ * while for ex, RTOS gcc - LITTLE_ENDIAN, by default
+ * it depends on __USE_BSD, but let's have everything
+ */
+#if !defined(BYTE_ORDER) && defined(__BYTE_ORDER)
+#define BYTE_ORDER __BYTE_ORDER
+#ifndef LITTLE_ENDIAN
+#define LITTLE_ENDIAN __LITTLE_ENDIAN
+#endif /* LITTLE_ENDIAN */
+#ifndef BIG_ENDIAN
+#define BIG_ENDIAN __LITTLE_ENDIAN
+#endif /* BIG_ENDIAN */
+#endif /* BYTE_ORDER */
+
+#endif /* CS_COMMON_CS_ENDIAN_H_ */
+#ifdef MG_MODULE_LINES
 #line 1 "./src/../../common/md5.c"
 #endif
 /*
@@ -1037,6 +1064,7 @@ void mbuf_remove(struct mbuf *mb, size_t n) {
 
 /* Amalgamated: #include "common/mg_str.h" */
 
+#include <stdlib.h>
 #include <string.h>
 
 int mg_ncasecmp(const char *s1, const char *s2, size_t len);
@@ -1068,6 +1096,30 @@ int mg_vcasecmp(const struct mg_str *str1, const char *str2) {
     return n1 - n2;
   }
   return r;
+}
+
+struct mg_str mg_strdup(const struct mg_str s) {
+  struct mg_str r = {NULL, 0};
+  if (s.len > 0 && s.p != NULL) {
+    r.p = (char *) malloc(s.len);
+    if (r.p != NULL) {
+      memcpy((char *) r.p, s.p, s.len);
+      r.len = s.len;
+    }
+  }
+  return r;
+}
+
+int mg_strcmp(const struct mg_str str1, const struct mg_str str2) {
+  size_t i = 0;
+  while (i < str1.len && i < str2.len) {
+    if (str1.p[i] < str2.p[i]) return -1;
+    if (str1.p[i] > str2.p[i]) return 1;
+    i++;
+  }
+  if (i < str1.len) return 1;
+  if (i < str2.len) return -1;
+  return 0;
 }
 #ifdef MG_MODULE_LINES
 #line 1 "./src/../../common/sha1.c"
@@ -8096,7 +8148,7 @@ void mg_mqtt_disconnect(struct mg_connection *nc) {
 
 #endif /* MG_DISABLE_MQTT */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/mqtt-broker.c"
+#line 1 "./src/mqtt_server.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -8641,7 +8693,7 @@ void mg_set_protocol_dns(struct mg_connection *nc) {
 
 #endif /* MG_DISABLE_DNS */
 #ifdef MG_MODULE_LINES
-#line 1 "./src/dns-server.c"
+#line 1 "./src/dns_server.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -10574,7 +10626,7 @@ void mg_set_non_blocking_mode(sock_t sock) {
 }
 
 static int mg_is_error(int n) {
-  return (n < 0 && n != SL_EALREADY);
+  return (n < 0 && n != SL_EALREADY && n != SL_EAGAIN);
 }
 
 void mg_if_connect_tcp(struct mg_connection *nc,

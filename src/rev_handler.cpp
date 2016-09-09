@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 #include <iostream>
 #include <msl/crypto.hpp>
 #include <msl/string.hpp>
@@ -49,7 +50,23 @@ static void ev_handler(mg_connection* conn,int event,void* p)
 rev_handler_t::rev_handler_t(rev_handler_cb_t add_cb,rev_handler_cb_t remove_cb,
 	rev_handler_cb_t recv_cb):
 	connected_m(false),add_cb_m(add_cb),remove_cb_m(remove_cb),recv_cb_m(recv_cb)
-{}
+{
+	std::string line;
+
+	std::ifstream pubf("public_key.pem");
+	if(!pubf)
+		throw std::runtime_error("CC handler could not find \"public_key.pem\".");
+	while(std::getline(pubf,line))
+		public_key_m+=line+"\n";
+	pubf.close();
+
+	std::ifstream privf("private_key.pem");
+	if(!privf)
+		throw std::runtime_error("CC handler could not find \"private_key.pem\".");
+	while(std::getline(privf,line))
+		private_key_m+=line+"\n";
+	privf.close();
+}
 
 rev_handler_t::~rev_handler_t()
 {
@@ -162,22 +179,47 @@ void rev_handler_t::recv(mg_connection* conn,std::string buffer)
 				std::string key=buffer;
 				buffer=client.scratch.substr(key.size(),client.scratch.size()-key.size());
 				client.scratch="";
-				client.secret=msl::crypto_rand(32);
-				client.iv=msl::crypto_rand(16);
+				client.pubkey=key;
+				client.status=CHALLENGE;
+				break;
+			}
+		}
+	}
+	if(client.status==CHALLENGE)
+	{
+		for(size_t ii=0;ii<buffer.size();++ii)
+		{
+			client.scratch+=buffer[ii];
+			if(buffer[ii]=='\n')
+			{
 				try
 				{
-					std::string packed_secret=pack_rsa(client.secret,key);
-					std::string packed_iv=pack_rsa(client.iv,key);
-					mg_send(conn,packed_secret.c_str(),packed_secret.size());
-					mg_send(conn,packed_iv.c_str(),packed_iv.size());
+					buffer=buffer.substr(ii+1,buffer.size()-ii-1);
+					std::string challenge=pack_hex(msl::encrypt_rsa(unpack_hex(client.scratch),public_key_m));
+					client.scratch="";
+					mg_send(conn,challenge.c_str(),challenge.size());
+					try
+					{
+						client.secret=msl::crypto_rand(32);
+						client.iv=msl::crypto_rand(16);
+						std::string packed_secret=pack_rsa(client.secret,client.pubkey);
+						std::string packed_iv=pack_rsa(client.iv,client.pubkey);
+						mg_send(conn,packed_secret.c_str(),packed_secret.size());
+						mg_send(conn,packed_iv.c_str(),packed_iv.size());
+						status_changed=true;
+						client.status=ENCRYPTED;
+					}
+					catch(...)
+					{
+						std::cout<<client.address<<" Invalid Client Public Key"<<std::endl;
+						kill(client.address);
+					}
 				}
 				catch(...)
 				{
-					std::cout<<client.address<<" Invalid Public Key"<<std::endl;
+					std::cout<<client.address<<" Invalid Server Public Key"<<std::endl;
 					kill(client.address);
 				}
-				client.status=ENCRYPTED;
-				status_changed=true;
 				break;
 			}
 		}
