@@ -26,9 +26,9 @@ How do encrypted sessions work?
 - Handler waits for shell to send an RSA public key, should look like one of these:
    * "-----BEGIN RSA PUBLIC KEY-----\n...-----END RSA PUBLIC KEY-----\n"
    * "-----BEGIN PUBLIC KEY-----\n...-----END PUBLIC KEY-----\n"
-- The shell contains a handler private key (sounds scary...might switch to public key instead...but it's only used for signing-like operations).
-- Handler waits for shell to send a challenge (random bytes), handler encrypts challenge with handler public key.
-- Shell verifies handler identity by decrypting the challenge with the handler private key.
+- The shell contains a handler public key.
+- Handler waits for shell to send a challenge (random bytes) that are encrypted with the handler public key.
+- Handler verifies its identity by decrypting the challenge bytes with its private key and sending them to the the shell.
 - Handler generates an AES 256 session key, encrypts it with the RSA public key, and sends it to the shell.
 - Handler generates an AES 256 session initial vector, encrypts it with the RSA public key, and sends it to the shell.
 - All further communications between the handler and shell are with AES 256 (specification coming soon).
