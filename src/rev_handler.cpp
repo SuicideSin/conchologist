@@ -169,6 +169,7 @@ void rev_handler_t::recv(mg_connection* conn,std::string buffer)
 		client.chunks.push_back("  "+buffer);
 		if(recv_cb_m)
 			recv_cb_m(*this,client);
+		client.timeout=millis()+KEEPALIVE_MS;
 	}
 	if(client.status==RECV_PUBKEY)
 	{
@@ -252,6 +253,7 @@ void rev_handler_t::recv(mg_connection* conn,std::string buffer)
 		{
 			std::cout<<client.address<<" Bad Decrypt"<<std::endl;
 		}
+		client.timeout=millis()+KEEPALIVE_MS;
 	}
 	if(status_changed)
 	{
@@ -287,6 +289,7 @@ void rev_handler_t::send(const std::string& address,std::string buffer,bool igno
 				}
 
 				mg_send(it->first,buffer.c_str(),buffer.size());
+				client.timeout=millis()+KEEPALIVE_MS;
 			}
 			else
 			{
