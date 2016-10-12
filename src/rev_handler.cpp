@@ -20,6 +20,9 @@ static int64_t millis()
 //Need to recv a key within this time or else it is assumed the connection is plaintext...
 static const int64_t KEY_RECV_TIMEOUT_MS=10000;
 
+//TCP keepalive
+static const int64_t KEEPALIVE_MS=2*60*1000;
+
 static const std::string key_head1("-----BEGIN RSA PUBLIC KEY-----\n");
 static const std::string key_head2("-----BEGIN PUBLIC KEY-----\n");
 static const std::string key_tail1("-----END RSA PUBLIC KEY-----\n");
@@ -88,14 +91,22 @@ void rev_handler_t::update()
 		for(rev_client_map_t::iterator it=clients_m.begin();it!=clients_m.end();++it)
 		{
 			rev_client_t& client=it->second;
-			if(client.status==UNKNOWN&&millis()>client.timeout)
+			if(millis()>client.timeout)
 			{
-				client.status=PLAINTEXT;
-				for(size_t ii=0;ii<client.buffered_cmds.size();++ii)
-					send(client.address,client.buffered_cmds[ii]);
-				client.buffered_cmds.clear();
-				if(recv_cb_m)
-					recv_cb_m(*this,client);
+				if(client.status==UNKNOWN)
+				{
+					client.status=PLAINTEXT;
+					for(size_t ii=0;ii<client.buffered_cmds.size();++ii)
+						send(client.address,client.buffered_cmds[ii]);
+					client.buffered_cmds.clear();
+					if(recv_cb_m)
+						recv_cb_m(*this,client);
+				}
+				else
+				{
+					send(client.address,"\n",true);
+				}
+				client.timeout=millis()+KEEPALIVE_MS;
 			}
 			it->first->last_io_time=mg_time();
 		}
@@ -252,7 +263,7 @@ void rev_handler_t::recv(mg_connection* conn,std::string buffer)
 
 //Send to reverse connection
 //  Everything to connection starts with "$ " when stored in chunks...
-void rev_handler_t::send(const std::string& address,std::string buffer)
+void rev_handler_t::send(const std::string& address,std::string buffer,bool ignore)
 {
 	for(rev_client_map_t::iterator it=clients_m.begin();it!=clients_m.end();++it)
 	{
@@ -261,7 +272,8 @@ void rev_handler_t::send(const std::string& address,std::string buffer)
 		{
 			if(client.status==PLAINTEXT||client.status==ENCRYPTED)
 			{
-				client.chunks.push_back("$ "+buffer);
+				if(!ignore)
+					client.chunks.push_back("$ "+buffer);
 				if(client.status==ENCRYPTED)
 				{
 					try

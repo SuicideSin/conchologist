@@ -48,7 +48,7 @@ class rev_handler_t
 		void add(mg_connection* conn);
 		void remove(mg_connection* conn);
 		void recv(mg_connection* conn,std::string buffer);
-		void send(const std::string& address,std::string buffer);
+		void send(const std::string& address,std::string buffer,bool ignore=false);
 		void kill(const std::string& address);
 		rev_client_list_t list() const;
 		const rev_client_map_t& map() const;
