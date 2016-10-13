@@ -34,8 +34,8 @@ terminal_manager_t.prototype.update=function()
 			if(xhr.status==200)
 			{
 				var modified=[];
-				//try
-				//{
+				try
+				{
 					var updates=JSON.parse(xhr.responseText);
 					for(let key in updates.result)
 					{
@@ -59,11 +59,11 @@ terminal_manager_t.prototype.update=function()
 									},
 									{
 										icon:'[ ]',
-										callback:function(){doorway.maximize();}
+										callback:function(){_this.doorway_manager.doorways[key].maximize();}
 									},
 									{
 										icon:'-',
-										callback:function(){doorway.set_minimized(true);}
+										callback:function(){_this.doorway_manager.doorways[key].set_minimized(true);}
 									}
 								]
 							});
@@ -104,16 +104,19 @@ terminal_manager_t.prototype.update=function()
 						if(!found)
 							_this.terminals[key].kill();
 					}
-					_this.update();
-				//}
-				//catch(error)
-				//{
-				//	console.log(error);
-				//	setTimeout(function()
-				//	{
-				//		_this.update();
-				//	},1000);
-				//}
+					setTimeout(function()
+					{
+						_this.update();
+					},100);
+				}
+				catch(error)
+				{
+					console.log(error);
+					setTimeout(function()
+					{
+						_this.update();
+					},1000);
+				}
 			}
 			else
 			{
