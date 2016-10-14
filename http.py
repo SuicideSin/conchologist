@@ -138,9 +138,12 @@ class client_t:
 				self.close()
 
 	def respond(self,code,msg,data='',ctype='text/html'):
-		res='HTTP/1.1 '+str(code)+' '+msg+'\r\n'
-		res+='Content-type: '+ctype+'\r\n'
-		res+='Content-length: '+str(len(data))+'\r\n\r\n'
+		res=''
+
+		if self.version=='HTTP/1.0' or self.version=='HTTP/1.1':
+			res+=self.version+' '+str(code)+' '+msg+'\r\n'
+			res+='Content-type: '+ctype+'\r\n'
+			res+='Content-length: '+str(len(data))+'\r\n\r\n'
 		res+=data
 
 		try:
