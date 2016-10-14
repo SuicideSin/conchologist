@@ -175,5 +175,5 @@ if __name__=='__main__':
 	except KeyboardInterrupt:
 		exit(1)
 
-	except Exception as error:
-		print('Error - '+str(error))
+	#except Exception as error:
+	#	print('Error - '+str(error))

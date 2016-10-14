@@ -1,5 +1,3 @@
-#openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout my.key -out my.crt
-#openssl s_client -connect 127.0.0.1:8080 -quiet
 import socket
 import ssl
 import utils
@@ -15,20 +13,28 @@ class client_t:
 
 	def send(self,data):
 		self.chunks.append('$ '+data)
-		self.sock.send(data)
+		try:
+			self.sock.send(data)
+
+		except Exception:
+			self.close()
 
 		if self.server.onsend:
 			self.server.onsend(self)
 
 	def recv(self):
-		data=self.sock.recv(1024)
+		try:
+			data=self.sock.recv(1024)
 
-		if not data:
-			self.close()
+			if not data:
+				self.close()
+				return False
+
+			self.add_recv_chunk(data)
+			return True
+
+		except Exception:
 			return False
-
-		self.add_recv_chunk(data)
-		return True
 
 	def add_recv_chunk(self,data):
 		if len(data)>0:
