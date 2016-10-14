@@ -76,12 +76,12 @@ class server_t:
 			bad_ssl=False
 
 			try:
-				sig_data=new_sock.recv(10,socket.MSG_PEEK)
+				sig_data=new_sock.recv(0,socket.MSG_PEEK)
 				ssl_client=client_t(self,self.ctx.wrap_socket(new_sock,server_side=True),addr,uid)
 				self.clients[uid]=ssl_client
 
 			except (socket.timeout,ssl.SSLError) as error:
-				if str(error)=='[SSL: UNKNOWN_PROTOCOL] unknown protocol (_ssl.c:590)':
+				if str(error).find('[SSL: UNKNOWN_PROTOCOL] unknown protocol')==0 or str(error).find('timed out')==0:
 					plain_client=client_t(self,new_sock,addr,uid)
 
 					if sig_data:
