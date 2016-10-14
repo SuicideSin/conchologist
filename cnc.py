@@ -1,5 +1,5 @@
 #openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout my.key -out my.crt
-#openssl s_client -connect 127.0.0.1:8080 -quiet|bash|openssl s_client -connect 127.0.0.1:8081 -quiet
+#openssl s_client -connect 127.0.0.1:8080 -quiet
 import socket
 import ssl
 import utils

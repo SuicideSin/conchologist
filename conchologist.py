@@ -26,11 +26,11 @@ def onclose(client):
 	service_comets(True)
 
 def onrecv(client):
-	print('recv client '+client.addr+' '+str(client.uid))
+	print('['+str(time.asctime())+'] tcp recv '+client.addr+' '+str(client.uid))
 	service_comets()
 
 def onsend(client):
-	print('send client '+client.addr+' '+str(client.uid))
+	print('['+str(time.asctime())+'] tcp send '+client.addr+' '+str(client.uid))
 	service_comets()
 
 def service_comets(force=False):
