@@ -63,7 +63,7 @@ terminal_manager_t.prototype.update=function()
 									},
 									{
 										icon:'-',
-										callback:function(){_this.doorway_manager.doorways[key].set_minimized(true);}
+										callback:function(){_this.doorway_manager.doorways[key].set_minimized(true)}
 									}
 								]
 							});
@@ -104,10 +104,7 @@ terminal_manager_t.prototype.update=function()
 						if(!found)
 							_this.terminals[key].kill();
 					}
-					setTimeout(function()
-					{
-						_this.update();
-					},100);
+					_this.update();
 				}
 				catch(error)
 				{
