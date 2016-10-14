@@ -1,4 +1,4 @@
 #!/bin/bash
-openssl genrsa -out private_key.pem 4096
-openssl rsa -pubout -in private_key.pem -out public_key.pem
-chmod 600 private_key.pem public_key.pem
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout my.key -out my.crt
+chmod 644 my.crt
+chmod 600 my.key
