@@ -56,7 +56,7 @@ class server_t:
 		self.onrecv=None
 		self.onsend=None
 		self.clients={}
-		self.ctx=ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+		self.ctx=ssl.SSLContext(ssl.PROTOCOL_SSLv23)
 		self.ctx.load_cert_chain(certfile=certfile,keyfile=keyfile)
 		self.sock=socket.socket()
 		self.sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
@@ -73,22 +73,30 @@ class server_t:
 			new_sock,addr=self.sock.accept()
 			new_sock.settimeout(1)
 			sig_data=''
+			bad_ssl=False
 
 			try:
-				sig_data=new_sock.recv(5,socket.MSG_PEEK)
+				sig_data=new_sock.recv(10,socket.MSG_PEEK)
 				ssl_client=client_t(self,self.ctx.wrap_socket(new_sock,server_side=True),addr,uid)
 				self.clients[uid]=ssl_client
 
 			except (socket.timeout,ssl.SSLError) as error:
-				plain_client=client_t(self,new_sock,addr,uid)
+				if str(error)=='[SSL: UNKNOWN_PROTOCOL] unknown protocol (_ssl.c:590)':
+					plain_client=client_t(self,new_sock,addr,uid)
 
-				if sig_data:
-					plain_client.add_recv_chunk(sig_data)
+					if sig_data:
+						plain_client.add_recv_chunk(sig_data)
 
-				self.clients[uid]=plain_client
+					self.clients[uid]=plain_client
 
-			if self.onopen:
+				else:
+					bad_ssl=True
+
+			if not bad_ssl and self.onopen:
 				self.onopen(self.clients[uid])
+
+			if bad_ssl:
+				self.remove(uid)
 
 		for uid in self.clients.keys():
 			if self.clients[uid].available() and not self.clients[uid].recv():

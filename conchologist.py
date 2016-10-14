@@ -153,7 +153,7 @@ def handler(client):
 
 if __name__=='__main__':
 	try:
-		cnc_server=cnc.server_t('127.0.0.1',8080,"my.crt","my.key")
+		cnc_server=cnc.server_t('0.0.0.0',8080,"my.crt","my.key")
 		cnc_server.onopen=onopen
 		cnc_server.onclose=onclose
 		cnc_server.onrecv=onrecv
@@ -175,5 +175,5 @@ if __name__=='__main__':
 	except KeyboardInterrupt:
 		exit(1)
 
-	#except Exception as error:
-	#	print('Error - '+str(error))
+	except Exception as error:
+		print('Error - '+str(error))
