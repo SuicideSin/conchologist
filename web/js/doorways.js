@@ -1,7 +1,7 @@
 //doorways.js
 //Version 4
 //Mike Moss
-//08/27/2016
+//12/17/2016
 
 //Manages doorways.
 //  Appends and constrains windows to constrain.
@@ -168,13 +168,18 @@ function doorway_t(constrain,options)
 	var _this=this;
 
 	//Client event_listeners.
-	this.event_listeners={active:[],inactive:[]};
+	this.event_listeners={active:[],inactive:[],resize:[]};
 
 	//Create window and bar.
 	this.win=document.createElement("div");
 	this.constrain.appendChild(this.win);
 	this.bar=document.createElement("div");
 	this.win.appendChild(this.bar);
+
+	//Create content area.
+	this.content=document.createElement("div");
+	this.content.className="doorway win content";
+	this.win.appendChild(this.content);
 
 	//Create resizers.
 	this.resizers=
@@ -424,6 +429,9 @@ doorway_t.prototype.resize=function(size)
 	//Resize.
 	this.win.style.width=size_copy.w+"px";
 	this.win.style.height=size_copy.h+"px";
+
+	for(let key in this.event_listeners.resize)
+		this.event_listeners.resize[key]();
 }
 
 //Make window active or inactive.

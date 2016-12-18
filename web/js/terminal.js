@@ -169,7 +169,7 @@ function terminal_t(manager,address,doorway)
 	this.dead=false;
 
 	this.el=document.createElement("div");
-	this.doorway.win.appendChild(this.el);
+	this.doorway.content.appendChild(this.el);
 	this.el.className="doorways terminal win";
 
 	this.history=document.createElement("div");

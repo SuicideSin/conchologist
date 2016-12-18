@@ -23,7 +23,6 @@
 .doorway.win
 {
 	position:absolute;
-	background-color:white;
 	border-radius:var(--border-radius);
 	overflow:hidden;
 	-webkit-user-select:none;
@@ -45,6 +44,15 @@
 	-webkit-box-shadow:inset 0 0 0 1px var(--active-color);
 	-moz-box-shadow:   inset 0 0 0 1px var(--active-color);
 	box-shadow:        inset 0 0 0 1px var(--active-color);
+}
+
+.doorway.win.content
+{
+	position:relative;
+	width:100%;
+	height:calc(100% - var(--bar-height));
+	margin:0px;
+	padding:0px;
 }
 
 .doorway.bar

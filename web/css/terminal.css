@@ -21,7 +21,7 @@
 {
 	position:absolute;
 	width:calc(100% - var(--window-padding) * 2 - var(--inner-padding) * 2);
-	height:calc(100% - 24px - var(--window-padding) * 3 - var(--bar-height));
+	height:calc(100% - 24px - var(--window-padding) * 3);
 	overflow:auto;
 	white-space:nowrap;
 	-moz-box-shadow:var(--shadow);

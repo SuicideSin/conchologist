@@ -11,6 +11,10 @@ cnc_server=None
 comets=[]
 comet_timeout_ms=1000*60*5
 max_comets=20
+cnc_port=8080
+cnc_addr='127.0.0.1'
+rev_port=8081
+rev_addr='0.0.0.0'
 
 def millis():
 	return int(round(time.time()*1000))
@@ -153,12 +157,22 @@ def handler(client):
 
 if __name__=='__main__':
 	try:
-		cnc_server=cnc.server_t('0.0.0.0',8080,"my.crt","my.key")
+		try:
+			cnc_server=cnc.server_t(cnc_addr,cnc_port,"my.crt","my.key")
+
+		except IOError as error:
+			print('Could not open "my.crt" or "my.key" (did you run gen_keys.sh?).')
+			exit(1)
+
 		cnc_server.onopen=onopen
 		cnc_server.onclose=onclose
 		cnc_server.onrecv=onrecv
 		cnc_server.onsend=onsend
-		http_server=http.server_t('127.0.0.1',8081,handler)
+		http_server=http.server_t(rev_addr,rev_port,handler)
+
+		print('Concologist started.')
+		print('CnC listening on '+cnc_addr+':'+str(cnc_port))
+		print('Rev listening on '+rev_addr+':'+str(rev_port))
 
 		while True:
 			cnc_server.update()
@@ -171,6 +185,8 @@ if __name__=='__main__':
 				else:
 					alive_comets.append(comet)
 			comets=alive_comets
+
+			time.sleep(0.01)
 
 	except KeyboardInterrupt:
 		exit(1)
