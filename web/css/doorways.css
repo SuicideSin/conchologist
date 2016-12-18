@@ -1,28 +1,32 @@
 .doorway
 {
-	--border-radius:     5px;
-	--font-family:       Sans-serif;
-	--active-color:      rgb(50,100,250);
-	--active-color-alt:  rgb(255,255,255);
-	--inactive-color:    rgb(220,220,220);
-	--inactive-color-alt:rgb(100,100,100);
+	--border-radius:                5px;
+	--font-family:                  Sans-serif;
+	--active-color:                 rgb(50,100,250);
+	--active-color-alt:             rgb(255,255,255);
+	--inactive-color:               rgb(220,220,220);
+	--inactive-color-alt:           rgb(100,100,100);
+	--window-background-color:      rgb(255,255,255);
+	--menu-background-color:        rgb(255,255,255);
+	--area-background-color:        rgb(255,255,255);
 
-	--menu-width:         240px;
-	--menu-handle-width:  32px;
-	--menu-button-height: 48px;
-	--menu-button-padding:5px;
+	--menu-width:                   240px;
+	--menu-handle-width:            32px;
+	--menu-button-height:           48px;
+	--menu-button-padding:          5px;
 
-	--bar-height:        54px;
-	--bar-button-size:   20px;
-	--bar-button-spacing:5px;
+	--bar-height:                   54px;
+	--bar-button-size:              20px;
+	--bar-button-spacing:           5px;
 
-	--resizer-width: 14px;
-	--resizer-height:14px;
+	--resizer-width:                14px;
+	--resizer-height:               14px;
 }
 
 .doorway.win
 {
 	position:absolute;
+	background-color:var(--window-background-color);
 	border-radius:var(--border-radius);
 	overflow:hidden;
 	-webkit-user-select:none;
@@ -49,9 +53,10 @@
 .doorway.win.content
 {
 	position:relative;
-	width:100%;
-	height:calc(100% - var(--bar-height));
-	margin:0px;
+	width:calc(100% - var(--resizer-width)*2);
+	height:calc(100% - var(--bar-height) - var(--resizer-height));
+	margin:var(--resizer-width);
+	margin-top:0px;
 	padding:0px;
 }
 
@@ -198,6 +203,7 @@
 .doorway.area
 {
 	position:absolute;
+	background-color:var(--area-background-color);
 	top:0px;
 	height:100%;
 	overflow:hidden;
@@ -221,6 +227,7 @@
 .doorway.menu
 {
 	position:relative;
+	background-color:var(--area-background-color);
 	height:100%;
 	overflow:hidden;
 }
@@ -244,6 +251,7 @@
 .doorway.menu.button_area.opened
 {
 	visibility:visible;
+	background-color:var(--menu-background-color);
 }
 
 .doorway.menu.button_area.closed
