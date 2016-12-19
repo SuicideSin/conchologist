@@ -2,13 +2,13 @@
 {
 	--border-radius:                5px;
 	--font-family:                  Sans-serif;
-	--active-color:                 rgb(50,100,250);
-	--active-color-alt:             rgb(255,255,255);
-	--inactive-color:               rgb(220,220,220);
-	--inactive-color-alt:           rgb(100,100,100);
-	--window-background-color:      rgb(255,255,255);
-	--menu-background-color:        rgb(255,255,255);
-	--area-background-color:        rgb(255,255,255);
+	--active-color:                 #707070;
+	--active-color-alt:             #00ff00;
+	--inactive-color:               #303030;
+	--inactive-color-alt:           #008800;
+	--window-background-color:      #000000;
+	--menu-background-color:        #181818;
+	--area-background-color:        #181818;
 
 	--menu-width:                   240px;
 	--menu-handle-width:            32px;
@@ -53,6 +53,7 @@
 .doorway.win.content
 {
 	position:relative;
+	border-radius:0px;
 	width:calc(100% - var(--resizer-width)*2);
 	height:calc(100% - var(--bar-height) - var(--resizer-height));
 	margin:var(--resizer-width);
