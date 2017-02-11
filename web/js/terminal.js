@@ -4,9 +4,9 @@ function terminal_manager_t(doorway_manager)
 		return null;
 	this.doorway_manager=doorway_manager;
 	var _this=this;
-	this.update();
 	this.terminals={};
 	this.updates={};
+	setInterval(function(){_this.update();},1000);
 }
 
 terminal_manager_t.prototype.destroy=function()
@@ -104,14 +104,13 @@ terminal_manager_t.prototype.update=function()
 						if(!found)
 							_this.terminals[key].kill();
 					}
-					_this.update();
+					//_this.update();  //WHY DONT YOU WORK?!
 				}
 				catch(error)
 				{
-					console.log(error);
 					setTimeout(function()
 					{
-						_this.update();
+						//_this.update();
 					},1000);
 				}
 			}
@@ -119,7 +118,7 @@ terminal_manager_t.prototype.update=function()
 			{
 				setTimeout(function()
 				{
-					_this.update();
+					//_this.update();
 				},1000);
 			}
 		}
